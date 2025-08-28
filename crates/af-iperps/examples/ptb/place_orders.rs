@@ -48,13 +48,13 @@ async fn main() -> Result<()> {
 
     // Size must be expressed in "number of lots". You can obtain the number of lots
     // by starting from a size expressed with `IFixed` (18 decimals). Similar way for `price`.
-    let size1 = clearing_house.value.ifixed_to_lots(IFixed::one())?; // 1 unit of BTC
+    let size1 = clearing_house.value.ifixed_to_size(IFixed::one())?; // 1 unit of BTC
     let price1 = clearing_house.value.ifixed_to_price(IFixed::one())?; // Price 1$
     let side1 = Side::Bid;
     let order_type1 = OrderType::PostOnly;
 
     // It is possible to place multiple orders in the same transaction
-    let size2 = clearing_house.value.ifixed_to_lots(IFixed::from(2))?; // 2 units of BTC
+    let size2 = clearing_house.value.ifixed_to_size(IFixed::from(2))?; // 2 units of BTC
     let price2 = clearing_house.value.ifixed_to_price(IFixed::from(2))?; // Price 2$
     let side2 = Side::Ask;
     let order_type2 = OrderType::ImmediateOrCancel;
