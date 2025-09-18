@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/af-move-type-derive-v0.3.2...af-move-type-derive-v0.3.3)
+
+### ⚙️ Miscellaneous Tasks
+
+- *(af-move-type-derive)* Clippy - ([fe3dfe5](https://github.com/AftermathFinance/aftermath-sdk-rust/commit/fe3dfe54d5cc9e3147a9c52ba77408dee93aafbc))
+
+
 ## [0.3.2](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/af-move-type-derive-v0.3.1...af-move-type-derive-v0.3.2)
 
 ### ⚙️ Miscellaneous Tasks

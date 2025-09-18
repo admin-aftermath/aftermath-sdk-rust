@@ -1,7 +1,7 @@
 [package]
 description = "Sui GraphQL RPC client by Aftermath using `cynic`"
 name        = "sui-gql-client"
-version     = "0.20.2"
+version     = "0.20.3"
 
 authors.workspace      = true
 categories.workspace   = true
@@ -57,7 +57,7 @@ futures-core   = { version = "0.3", public = true, optional = true }
 reqwest        = { version = "0.12", public = true, default-features = false, optional = true }
 serde          = { version = "1", public = true }
 serde_json     = { version = "1", public = true, optional = true }
-sui-gql-schema = { version = "0.11.3", public = true, default-features = false, path = "../sui-gql-schema" }
+sui-gql-schema = { version = "0.12.0", public = true, default-features = false, path = "../sui-gql-schema" }
 sui-sdk-types  = { version = "0.0.6", public = true, optional = true }
 
 graphql-extract = { version = "0.0.10", path = "../graphql-extract", optional = true }
@@ -84,7 +84,7 @@ bcs = { version = "0.1", optional = true }
 default-features = false
 features         = ["build"]
 path             = "../sui-gql-schema"
-version          = "0.11.3"
+version = "0.12.0"
 
 
 [dev-dependencies]

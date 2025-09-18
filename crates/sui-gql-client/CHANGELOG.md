@@ -38,6 +38,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.3](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/sui-gql-client-v0.20.2...sui-gql-client-v0.20.3)
+
+### ⚙️ Miscellaneous Tasks
+
+- *(sui-gql-client)* Added build feature to dev dependency - ([e630cab](https://github.com/AftermathFinance/aftermath-sdk-rust/commit/e630cab0f6986c8d900416900e7d1d9c6219d899))
+
+
 ## [0.19.0](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/sui-gql-client-v0.18.0...sui-gql-client-v0.19.0)
 
 ### ⛰️ Features
