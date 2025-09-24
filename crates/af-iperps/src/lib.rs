@@ -190,17 +190,22 @@ sui_pkg_sdk!(perpetuals {
         /// only if the index price respects certain conditions, like being above or
         /// below a certain price.
         ///
-        /// Only the `Account` owner can mint this object and can decide who can be
+        /// Only the `AccountCap` owner can mint this object and can decide who can be
         /// the executor of the ticket. This allows users to run their
         /// own stop orders bots eventually, but it's mainly used to allow 3rd parties
         /// to offer such a service (the user is required to trust such 3rd party).
-        /// The object is shared and the 3rd party is set as `executor`. The ticket
+        /// The object is shared and the 3rd party is set as `executors`. The ticket
         /// can be destroyed in any moment only by the user or by the executor.
         /// The user needs to trust the 3rd party for liveness of the service offered.
         ///
         /// The order details are encrypted offchain and the result is stored in the ticket.
         /// The user needs to share such details with the 3rd party only to allow for execution.
-        struct StopOrderTicket<!phantom T> has key {
+        ///
+        /// The ticket can be either a shared, owned or party object.
+        /// The permission to execute or cancel it is controlled exclusively through `executors`,
+        /// which can be modified only by the `AccountCap` owner associated with the ticket
+        /// using the function `edit_stop_order_ticket_executors`.
+        struct StopOrderTicket<!phantom T> has key, store {
             id: UID,
             /// Addresses allowed to execute the order on behalf of the user.
             executors: vector<address>,
@@ -341,6 +346,17 @@ sui_pkg_sdk!(perpetuals {
             fees: IFixed
         }
 
+        struct CreatedIntegratorVault has copy, drop {
+            ch_id: ID,
+            integrator_address: address,
+        }
+
+        struct WithdrewFromIntegratorVault has copy, drop {
+            ch_id: ID,
+            integrator_address: address,
+            fees: u64
+        }
+
         struct UpdatedClearingHouseVersion has copy, drop {
             ch_id: ID,
             version: u64
@@ -368,6 +384,19 @@ sui_pkg_sdk!(perpetuals {
             mean: IFixed,
             variance: IFixed,
             gas_price_last_upd_ms: u64
+        }
+
+        struct UpdatedGasPriceTwapParameters has copy, drop {
+            ch_id: ID,
+            gas_price_twap_period_ms: u64,
+            gas_price_taker_fee: IFixed,
+            z_score_threshold: IFixed
+        }
+
+        struct UpdatedMarketLotAndTick has copy, drop {
+            ch_id: ID,
+            lot_size: u64,
+            tick_size: u64
         }
 
         struct UpdatedFunding has copy, drop {
@@ -407,6 +436,8 @@ sui_pkg_sdk!(perpetuals {
             taker_account_id: u64,
             taker_pnl: IFixed,
             taker_fees: IFixed,
+            integrator_taker_fees: IFixed,
+            integrator_address: Option<address>,
             base_asset_delta_ask: IFixed,
             quote_asset_delta_ask: IFixed,
             base_asset_delta_bid: IFixed,
