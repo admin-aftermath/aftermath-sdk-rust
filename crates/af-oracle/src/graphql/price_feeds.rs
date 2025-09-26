@@ -1,5 +1,5 @@
 use af_move_type::MoveInstance;
-use af_sui_types::{ObjectId, Version};
+use af_sui_types::{Address, Version};
 use enum_as_inner::EnumAsInner;
 use futures::Stream;
 use sui_gql_client::queries::fragments::{MoveValueRaw, PageInfoForward};
@@ -10,9 +10,9 @@ type PriceFeed = MoveInstance<crate::oracle::PriceFeed>;
 
 pub(super) fn query<C: GraphQlClient>(
     client: &C,
-    pfs: ObjectId,
+    pfs: Address,
     version: Option<Version>,
-) -> impl Stream<Item = Result<(ObjectId, PriceFeed), Error<C::Error>>> + '_ {
+) -> impl Stream<Item = Result<(Address, PriceFeed), Error<C::Error>>> + '_ {
     async_stream::try_stream! {
         let mut vars = Variables {
             pfs,
@@ -40,7 +40,7 @@ async fn request<C: GraphQlClient>(
 ) -> Result<
     (
         PageInfoForward,
-        impl Iterator<Item = (ObjectId, PriceFeed)> + 'static,
+        impl Iterator<Item = (Address, PriceFeed)> + 'static,
     ),
     Error<C::Error>,
 > {
@@ -63,7 +63,7 @@ fn extract(data: Option<Query>) -> Result<PfsDfsConnection, &'static str> {
     Ok(dfs)
 }
 
-fn filter_df(df: PfsDf) -> Option<(ObjectId, PriceFeed)> {
+fn filter_df(df: PfsDf) -> Option<(Address, PriceFeed)> {
     let df_name: MoveInstance<crate::keys::PriceFeedForSource> = df.df_name?.try_into().ok()?;
     let df_value_raw = df.df_value?.into_move_value().ok();
     let df_value: PriceFeed = df_value_raw?.try_into().ok()?;
@@ -78,7 +78,7 @@ fn gql_output() {
     use cynic::QueryBuilder as _;
 
     let vars = Variables {
-        pfs: ObjectId::ZERO,
+        pfs: Address::ZERO,
         version: None,
         first: Some(10),
         after: None,
@@ -117,7 +117,7 @@ fn gql_output() {
 
 #[derive(cynic::QueryVariables, Clone, Debug)]
 struct Variables {
-    pfs: ObjectId,
+    pfs: Address,
     version: Option<Version>,
     first: Option<i32>,
     after: Option<String>,

@@ -8,7 +8,7 @@ pub struct UID {
     serde::Deserialize, serde::Serialize, Clone, Debug, derive_more::Display, PartialEq, Eq, Hash,
 )]
 pub struct ID {
-    bytes: af_sui_types::ObjectId,
+    bytes: af_sui_types::Address,
 }
 #[derive(
     serde::Deserialize, serde::Serialize, Clone, Debug, derive_more::Display, PartialEq, Eq, Hash,

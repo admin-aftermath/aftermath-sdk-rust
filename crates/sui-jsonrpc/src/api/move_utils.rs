@@ -3,7 +3,7 @@
 
 use std::collections::BTreeMap;
 
-use af_sui_types::ObjectId;
+use af_sui_types::Address;
 use jsonrpsee::proc_macros::rpc;
 
 use crate::msgs::{
@@ -20,7 +20,7 @@ pub trait MoveUtils {
     #[method(name = "getMoveFunctionArgTypes")]
     async fn get_move_function_arg_types(
         &self,
-        package: ObjectId,
+        package: Address,
         module: String,
         function: String,
     ) -> RpcResult<Vec<MoveFunctionArgType>>;
@@ -29,14 +29,14 @@ pub trait MoveUtils {
     #[method(name = "getNormalizedMoveModulesByPackage")]
     async fn get_normalized_move_modules_by_package(
         &self,
-        package: ObjectId,
+        package: Address,
     ) -> RpcResult<BTreeMap<String, SuiMoveNormalizedModule>>;
 
     /// Return a structured representation of Move module
     #[method(name = "getNormalizedMoveModule")]
     async fn get_normalized_move_module(
         &self,
-        package: ObjectId,
+        package: Address,
         module_name: String,
     ) -> RpcResult<SuiMoveNormalizedModule>;
 
@@ -44,7 +44,7 @@ pub trait MoveUtils {
     #[method(name = "getNormalizedMoveStruct")]
     async fn get_normalized_move_struct(
         &self,
-        package: ObjectId,
+        package: Address,
         module_name: String,
         struct_name: String,
     ) -> RpcResult<SuiMoveNormalizedStruct>;
@@ -53,7 +53,7 @@ pub trait MoveUtils {
     #[method(name = "getNormalizedMoveFunction")]
     async fn get_normalized_move_function(
         &self,
-        package: ObjectId,
+        package: Address,
         module_name: String,
         function_name: String,
     ) -> RpcResult<SuiMoveNormalizedFunction>;

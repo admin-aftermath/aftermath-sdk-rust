@@ -36,17 +36,13 @@ pub use sui_sdk_types::{
     Argument,
     CheckpointCommitment,
     CheckpointContents,
-    CheckpointContentsDigest,
     CheckpointData,
-    CheckpointDigest,
     CheckpointSequenceNumber,
     CheckpointSummary,
     CheckpointTimestamp,
     CheckpointTransaction,
     Command,
-    ConsensusCommitDigest,
     Digest,
-    EffectsAuxiliaryDataDigest,
     EndOfEpochData,
     EpochId,
     Event,
@@ -60,8 +56,6 @@ pub use sui_sdk_types::{
     MoveCall,
     MovePackage,
     Object,
-    ObjectDigest,
-    ObjectId,
     ObjectIn,
     ObjectOut,
     Owner,
@@ -70,19 +64,16 @@ pub use sui_sdk_types::{
     SignedTransaction,
     StructTag,
     Transaction,
-    TransactionDigest,
     TransactionEffects,
-    TransactionEffectsDigest,
     TransactionEffectsV1,
     TransactionEffectsV2,
     TransactionEvents,
-    TransactionEventsDigest,
     TransactionExpiration,
     TransactionKind,
     TypeOrigin,
     TypeParseError,
     TypeTag,
-    UnchangedSharedKind,
+    UnchangedConsensusKind,
     UpgradeInfo,
     UserSignature,
     Version,
@@ -129,29 +120,26 @@ pub use self::sui::transaction::{
 /// Can be created from [`ObjectReference::into_parts`].
 ///
 /// [`ObjectReference::into_parts`]: sui_sdk_types::ObjectReference::into_parts
-pub type ObjectRef = (ObjectId, Version, ObjectDigest);
+pub type ObjectRef = (Address, Version, Digest);
 
 // =============================================================================
 //  Constants
 // =============================================================================
 
 /// Object ID of the onchain `Clock`.
-pub const CLOCK_ID: ObjectId = ObjectId::new(hex_address_bytes(b"0x6"));
+pub const CLOCK_ID: Address = Address::from_hex_unwrap(b"0x6");
 
 const OBJECT_DIGEST_DELETED_BYTE_VAL: u8 = 99;
 const OBJECT_DIGEST_WRAPPED_BYTE_VAL: u8 = 88;
 const OBJECT_DIGEST_CANCELLED_BYTE_VAL: u8 = 77;
 
 /// A marker that signifies the object is deleted.
-pub const OBJECT_DIGEST_DELETED: ObjectDigest =
-    ObjectDigest::new([OBJECT_DIGEST_DELETED_BYTE_VAL; 32]);
+pub const OBJECT_DIGEST_DELETED: Digest = Digest::new([OBJECT_DIGEST_DELETED_BYTE_VAL; 32]);
 
 /// A marker that signifies the object is wrapped into another object.
-pub const OBJECT_DIGEST_WRAPPED: ObjectDigest =
-    ObjectDigest::new([OBJECT_DIGEST_WRAPPED_BYTE_VAL; 32]);
+pub const OBJECT_DIGEST_WRAPPED: Digest = Digest::new([OBJECT_DIGEST_WRAPPED_BYTE_VAL; 32]);
 
-pub const OBJECT_DIGEST_CANCELLED: ObjectDigest =
-    ObjectDigest::new([OBJECT_DIGEST_CANCELLED_BYTE_VAL; 32]);
+pub const OBJECT_DIGEST_CANCELLED: Digest = Digest::new([OBJECT_DIGEST_CANCELLED_BYTE_VAL; 32]);
 
 pub const COIN_MODULE_NAME: &IdentStr = IdentStr::cast("coin");
 pub const COIN_STRUCT_NAME: &IdentStr = IdentStr::cast("Coin");
@@ -220,7 +208,7 @@ macro_rules! built_in_ids {
     ($($addr:ident / $id:ident = $init:expr_2021);* $(;)?) => {
         $(
             pub const $addr: Address = builtin_address($init);
-            pub const $id: ObjectId = ObjectId::new($addr.into_inner());
+            pub const $id: Address = Address::new($addr.into_inner());
         )*
     }
 }
@@ -255,17 +243,14 @@ const fn builtin_address(suffix: u16) -> Address {
 //  Functions
 // =============================================================================
 
+#[allow(deprecated)]
 #[doc(inline)]
 pub use self::const_address::hex_address_bytes;
 #[doc(inline)]
 pub use self::encoding::{decode_base64_default, encode_base64_default};
 
 /// `const`-ructor for Sui addresses.
+#[deprecated(note = "use `Address::from_hex_unwrap` instead", since = "0.14.0")]
 pub const fn address(bytes: &[u8]) -> Address {
-    Address::new(hex_address_bytes(bytes))
-}
-
-/// `const`-ructor for object IDs.
-pub const fn object_id(bytes: &[u8]) -> ObjectId {
-    ObjectId::new(hex_address_bytes(bytes))
+    Address::from_hex_unwrap(bytes)
 }

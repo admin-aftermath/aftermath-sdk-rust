@@ -1,4 +1,4 @@
-use af_sui_types::{Address as SuiAddress, ObjectId};
+use af_sui_types::Address as SuiAddress;
 use cynic::GraphQlResponse;
 
 use super::Error;
@@ -135,7 +135,7 @@ enum DynamicFieldValue {
 #[derive(cynic::QueryFragment, Debug)]
 struct MoveObject {
     #[cynic(rename = "address")]
-    object_id: ObjectId,
+    object_id: SuiAddress,
     version: af_sui_types::Version,
     contents: Option<MoveValueRaw>,
 }

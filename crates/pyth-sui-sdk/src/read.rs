@@ -1,12 +1,6 @@
 //! JSON-RPC methods for querying Pyth on-chain data.
 use af_ptbuilder::ptb;
-use af_sui_types::{
-    Address as SuiAddress,
-    ObjectArg,
-    ObjectId,
-    TransactionKind,
-    encode_base64_default,
-};
+use af_sui_types::{Address as SuiAddress, ObjectArg, TransactionKind, encode_base64_default};
 use sui_framework_sdk::object::ID;
 use sui_jsonrpc::api::WriteApiClient;
 
@@ -32,10 +26,10 @@ pub enum Error {
 /// Price identifiers can be found in <https://www.pyth.network/developers/price-feed-ids>
 pub async fn get_price_info_object_id_from_pyth_state<C>(
     client: &C,
-    package: ObjectId,
+    package: SuiAddress,
     price_identifier_hex: String,
     pyth_state: ObjectArg,
-) -> Result<ObjectId>
+) -> Result<SuiAddress>
 where
     C: WriteApiClient + Sync,
 {

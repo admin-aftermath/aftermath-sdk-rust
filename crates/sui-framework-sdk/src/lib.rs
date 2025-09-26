@@ -4,7 +4,7 @@
 
 pub use af_move_type;
 use af_move_type::{MoveInstance, MoveType};
-pub use af_sui_types::ObjectId;
+pub use af_sui_types::Address;
 use move_stdlib_sdk::type_name::TypeName;
 
 use self::bag::*;
@@ -549,7 +549,7 @@ pub mod object {
         clippy::too_long_first_doc_paragraph,
         reason = "Docs for the sui-framework have long first paragraphs."
     )]
-    use super::ObjectId;
+    use super::Address;
 
     /// An object ID. This is used to reference Sui Objects.
     /// This is *not* guaranteed to be globally unique--anyone can create an `ID` from a `UID` or
@@ -573,11 +573,11 @@ pub mod object {
     #[serde(crate = "af_sui_pkg_sdk::serde", transparent)]
     #[tabled(crate = "af_sui_pkg_sdk::tabled")]
     pub struct ID {
-        pub bytes: ObjectId,
+        pub bytes: Address,
     }
 
     impl ID {
-        pub const fn new(object_id: ObjectId) -> Self {
+        pub const fn new(object_id: Address) -> Self {
             Self { bytes: object_id }
         }
     }
@@ -588,7 +588,7 @@ pub mod object {
         }
     }
 
-    impl From<ID> for ObjectId {
+    impl From<ID> for Address {
         fn from(value: ID) -> Self {
             value.bytes
         }
@@ -619,7 +619,7 @@ pub mod object {
     }
 
     impl UID {
-        pub const fn new(object_id: ObjectId) -> Self {
+        pub const fn new(object_id: Address) -> Self {
             Self {
                 id: ID::new(object_id),
             }
@@ -632,13 +632,13 @@ pub mod object {
         }
     }
 
-    impl From<ObjectId> for UID {
-        fn from(value: ObjectId) -> Self {
+    impl From<Address> for UID {
+        fn from(value: Address) -> Self {
             Self::new(value)
         }
     }
 
-    impl From<UID> for ObjectId {
+    impl From<UID> for Address {
         fn from(value: UID) -> Self {
             value.id.bytes
         }

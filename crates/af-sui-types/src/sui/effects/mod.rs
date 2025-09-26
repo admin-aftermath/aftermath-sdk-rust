@@ -4,23 +4,21 @@
 use std::collections::{BTreeMap, HashSet};
 
 use sui_sdk_types::{
+    Address,
+    Digest,
     EpochId,
     ExecutionStatus,
     GasCostSummary,
     IdOperation,
-    ObjectDigest,
-    ObjectId,
     ObjectIn,
     ObjectOut,
     ObjectReference,
     ObjectReferenceWithOwner,
     Owner,
-    TransactionDigest,
     TransactionEffects,
     TransactionEffectsV1,
     TransactionEffectsV2,
-    TransactionEventsDigest,
-    UnchangedSharedKind,
+    UnchangedConsensusKind,
     Version,
 };
 
@@ -52,7 +50,7 @@ impl TransactionEffectsAPI for TransactionEffects {
         dispatch!(self, executed_epoch)
     }
 
-    fn modified_at_versions(&self) -> Vec<(ObjectId, Version)> {
+    fn modified_at_versions(&self) -> Vec<(Address, Version)> {
         dispatch!(self, modified_at_versions)
     }
 
@@ -100,15 +98,15 @@ impl TransactionEffectsAPI for TransactionEffects {
         dispatch!(self, gas_object)
     }
 
-    fn events_digest(&self) -> Option<&TransactionEventsDigest> {
+    fn events_digest(&self) -> Option<&Digest> {
         dispatch!(self, events_digest)
     }
 
-    fn dependencies(&self) -> &[TransactionDigest] {
+    fn dependencies(&self) -> &[Digest] {
         dispatch!(self, dependencies)
     }
 
-    fn transaction_digest(&self) -> &TransactionDigest {
+    fn transaction_digest(&self) -> &Digest {
         dispatch!(self, transaction_digest)
     }
 
@@ -116,7 +114,7 @@ impl TransactionEffectsAPI for TransactionEffects {
         dispatch!(self, gas_cost_summary)
     }
 
-    fn unchanged_shared_objects(&self) -> Vec<(ObjectId, UnchangedSharedKind)> {
+    fn unchanged_shared_objects(&self) -> Vec<(Address, UnchangedConsensusKind)> {
         dispatch!(self, unchanged_shared_objects)
     }
 }
@@ -134,7 +132,7 @@ impl TransactionEffectsAPI for TransactionEffectsV1 {
         self.epoch
     }
 
-    fn modified_at_versions(&self) -> Vec<(ObjectId, Version)> {
+    fn modified_at_versions(&self) -> Vec<(Address, Version)> {
         self.modified_at_versions
             .iter()
             // V1 transaction effects "modified_at_versions" includes unwrapped_then_deleted
@@ -168,7 +166,7 @@ impl TransactionEffectsAPI for TransactionEffectsV1 {
             .iter()
             .map(|key| key.object_id)
             .collect();
-        self.shared_objects
+        self.consensus_objects
             .iter()
             .cloned()
             .map(|r| {
@@ -278,15 +276,15 @@ impl TransactionEffectsAPI for TransactionEffectsV1 {
     fn gas_object(&self) -> Option<(ObjectReference, Owner)> {
         Some(into_parts(self.gas_object.clone()))
     }
-    fn events_digest(&self) -> Option<&TransactionEventsDigest> {
+    fn events_digest(&self) -> Option<&Digest> {
         self.events_digest.as_ref()
     }
 
-    fn dependencies(&self) -> &[TransactionDigest] {
+    fn dependencies(&self) -> &[Digest] {
         &self.dependencies
     }
 
-    fn transaction_digest(&self) -> &TransactionDigest {
+    fn transaction_digest(&self) -> &Digest {
         &self.transaction_digest
     }
 
@@ -294,14 +292,14 @@ impl TransactionEffectsAPI for TransactionEffectsV1 {
         &self.gas_used
     }
 
-    fn unchanged_shared_objects(&self) -> Vec<(ObjectId, UnchangedSharedKind)> {
+    fn unchanged_shared_objects(&self) -> Vec<(Address, UnchangedConsensusKind)> {
         self.sequenced_input_shared_objects()
             .iter()
             .filter_map(|o| match o {
                 // In effects v1, the only unchanged shared objects are read-only shared objects.
                 InputSharedObject::ReadOnly(oref) => Some((
                     *oref.object_id(),
-                    UnchangedSharedKind::ReadOnlyRoot {
+                    UnchangedConsensusKind::ReadOnlyRoot {
                         version: oref.version(),
                         digest: *oref.digest(),
                     },
@@ -325,7 +323,7 @@ impl TransactionEffectsAPI for TransactionEffectsV2 {
         self.epoch
     }
 
-    fn modified_at_versions(&self) -> Vec<(ObjectId, Version)> {
+    fn modified_at_versions(&self) -> Vec<(Address, Version)> {
         self.changed_objects
             .iter()
             .filter_map(|c| {
@@ -374,26 +372,27 @@ impl TransactionEffectsAPI for TransactionEffectsV2 {
                 _ => None,
             })
             .chain(
-                self.unchanged_shared_objects
+                self.unchanged_consensus_objects
                     .iter()
                     .filter_map(|u| match u.kind {
-                        UnchangedSharedKind::ReadOnlyRoot { version, digest } => Some(
+                        UnchangedConsensusKind::ReadOnlyRoot { version, digest } => Some(
                             InputSharedObject::ReadOnly(oref(u.object_id, version, digest)),
                         ),
-                        UnchangedSharedKind::MutateDeleted { version } => {
+                        UnchangedConsensusKind::MutateDeleted { version } => {
                             Some(InputSharedObject::MutateDeleted(u.object_id, version))
                         }
-                        UnchangedSharedKind::ReadDeleted { version } => {
+                        UnchangedConsensusKind::ReadDeleted { version } => {
                             Some(InputSharedObject::ReadDeleted(u.object_id, version))
                         }
-                        UnchangedSharedKind::Canceled { version } => {
+                        UnchangedConsensusKind::Canceled { version } => {
                             Some(InputSharedObject::Canceled(u.object_id, version))
                         }
-                        UnchangedSharedKind::PerEpochConfigWithSequenceNumber { .. } => None,
+                        UnchangedConsensusKind::PerEpochConfigWithSequenceNumber { .. } => None,
                         // We can not expose the per epoch config object as input shared object,
                         // since it does not require sequencing, and hence shall not be considered
                         // as a normal input shared object.
-                        UnchangedSharedKind::PerEpochConfig => None,
+                        UnchangedConsensusKind::PerEpochConfig => None,
+                        _ => panic!("unknown UnchangedConsensusKind variant"),
                     }),
             )
             .collect()
@@ -506,6 +505,7 @@ impl TransactionEffectsAPI for TransactionEffectsV2 {
                     ObjectIn::Exist {
                         version, digest, ..
                     } => Some((*version, *digest)),
+                    _ => panic!("unknown ObjectIn variant"),
                 };
 
                 let output_version_digest = match &c.output_state {
@@ -514,6 +514,7 @@ impl TransactionEffectsAPI for TransactionEffectsV2 {
                     ObjectOut::PackageWrite {
                         version, digest, ..
                     } => Some((*version, *digest)),
+                    _ => panic!("unknown ObjectOut variant"),
                 };
 
                 ObjectChange {
@@ -543,15 +544,15 @@ impl TransactionEffectsAPI for TransactionEffectsV2 {
         })
     }
 
-    fn events_digest(&self) -> Option<&TransactionEventsDigest> {
+    fn events_digest(&self) -> Option<&Digest> {
         self.events_digest.as_ref()
     }
 
-    fn dependencies(&self) -> &[TransactionDigest] {
+    fn dependencies(&self) -> &[Digest] {
         &self.dependencies
     }
 
-    fn transaction_digest(&self) -> &TransactionDigest {
+    fn transaction_digest(&self) -> &Digest {
         &self.transaction_digest
     }
 
@@ -559,8 +560,8 @@ impl TransactionEffectsAPI for TransactionEffectsV2 {
         &self.gas_used
     }
 
-    fn unchanged_shared_objects(&self) -> Vec<(ObjectId, UnchangedSharedKind)> {
-        self.unchanged_shared_objects
+    fn unchanged_shared_objects(&self) -> Vec<(Address, UnchangedConsensusKind)> {
+        self.unchanged_consensus_objects
             .clone()
             .into_iter()
             .map(|u| (u.object_id, u.kind))
@@ -572,6 +573,6 @@ const fn into_parts(r: ObjectReferenceWithOwner) -> (ObjectReference, Owner) {
     (r.reference, r.owner)
 }
 
-fn oref(id: ObjectId, version: Version, digest: ObjectDigest) -> ObjectReference {
+fn oref(id: Address, version: Version, digest: Digest) -> ObjectReference {
     ObjectReference::new(id, version, digest)
 }

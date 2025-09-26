@@ -4,13 +4,13 @@ use std::borrow::Borrow;
 use std::fmt::Display;
 
 use af_sui_types::{
+    Address,
     DYNAMIC_FIELD_FIELD_STRUCT_NAME,
     DYNAMIC_FIELD_MODULE_NAME,
     DYNAMIC_OBJECT_FIELD_MODULE_NAME,
     DYNAMIC_OBJECT_FIELD_WRAPPER_STRUCT_NAME,
+    Digest,
     IdentStr,
-    ObjectDigest,
-    ObjectId,
     SUI_FRAMEWORK_ADDRESS,
     StructTag,
     TypeTag,
@@ -22,7 +22,7 @@ use sui_sdk_types::Version;
 use super::Page;
 use crate::serde::Base64orBase58;
 
-pub type DynamicFieldPage = Page<DynamicFieldInfo, ObjectId>;
+pub type DynamicFieldPage = Page<DynamicFieldInfo, Address>;
 
 /// Originally `sui_types::dynamic_field::DynamicFieldName`.
 #[serde_as]
@@ -51,9 +51,9 @@ pub struct DynamicFieldInfo {
     pub bcs_name: Vec<u8>,
     pub type_: DynamicFieldType,
     pub object_type: String,
-    pub object_id: ObjectId,
+    pub object_id: Address,
     pub version: Version,
-    pub digest: ObjectDigest,
+    pub digest: Digest,
 }
 
 impl DynamicFieldInfo {

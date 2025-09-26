@@ -3,17 +3,15 @@
 
 //! Common interface for all transaction effect versions.
 use sui_sdk_types::{
+    Address,
+    Digest,
     EpochId,
     ExecutionStatus,
     GasCostSummary,
     IdOperation,
-    ObjectDigest,
-    ObjectId,
     ObjectReference as ObjectRef,
     Owner,
-    TransactionDigest,
-    TransactionEventsDigest,
-    UnchangedSharedKind,
+    UnchangedConsensusKind,
     Version,
 };
 
@@ -27,7 +25,7 @@ pub trait TransactionEffectsAPI {
 
     fn executed_epoch(&self) -> EpochId;
 
-    fn modified_at_versions(&self) -> Vec<(ObjectId, Version)>;
+    fn modified_at_versions(&self) -> Vec<(Address, Version)>;
 
     /// The version assigned to all output objects (apart from packages).
     fn lamport_version(&self) -> Version;
@@ -72,15 +70,15 @@ pub trait TransactionEffectsAPI {
     // Returns `None` when the gas object is not available (i.e. system transaction).
     fn gas_object(&self) -> Option<(ObjectRef, Owner)>;
 
-    fn events_digest(&self) -> Option<&TransactionEventsDigest>;
+    fn events_digest(&self) -> Option<&Digest>;
 
-    fn dependencies(&self) -> &[TransactionDigest];
+    fn dependencies(&self) -> &[Digest];
 
-    fn transaction_digest(&self) -> &TransactionDigest;
+    fn transaction_digest(&self) -> &Digest;
 
     fn gas_cost_summary(&self) -> &GasCostSummary;
 
-    fn deleted_mutably_accessed_shared_objects(&self) -> Vec<ObjectId> {
+    fn deleted_mutably_accessed_shared_objects(&self) -> Vec<Address> {
         self.sequenced_input_shared_objects()
             .into_iter()
             .filter_map(|kind| match kind {
@@ -94,20 +92,20 @@ pub trait TransactionEffectsAPI {
     }
 
     /// Returns all root shared objects (i.e. not child object) that are read-only in the transaction.
-    fn unchanged_shared_objects(&self) -> Vec<(ObjectId, UnchangedSharedKind)>;
+    fn unchanged_shared_objects(&self) -> Vec<(Address, UnchangedConsensusKind)>;
 }
 
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub enum InputSharedObject {
     Mutate(ObjectRef),
     ReadOnly(ObjectRef),
-    ReadDeleted(ObjectId, Version),
-    MutateDeleted(ObjectId, Version),
-    Canceled(ObjectId, Version),
+    ReadDeleted(Address, Version),
+    MutateDeleted(Address, Version),
+    Canceled(Address, Version),
 }
 
 impl InputSharedObject {
-    pub fn id_and_version(&self) -> (ObjectId, Version) {
+    pub fn id_and_version(&self) -> (Address, Version) {
         let oref = self.object_ref();
         (*oref.object_id(), oref.version())
     }
@@ -127,10 +125,10 @@ impl InputSharedObject {
 
 #[derive(Clone)]
 pub struct ObjectChange {
-    pub id: ObjectId,
+    pub id: Address,
     pub input_version: Option<Version>,
-    pub input_digest: Option<ObjectDigest>,
+    pub input_digest: Option<Digest>,
     pub output_version: Option<Version>,
-    pub output_digest: Option<ObjectDigest>,
+    pub output_digest: Option<Digest>,
     pub id_operation: IdOperation,
 }

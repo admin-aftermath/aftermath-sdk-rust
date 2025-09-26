@@ -1,4 +1,4 @@
-use af_sui_types::{Address as SuiAddress, ObjectId, ObjectRef, Version};
+use af_sui_types::{Address as SuiAddress, ObjectRef, Version};
 use cynic::GraphQlResponse;
 
 use super::fragments::PageInfoForward;
@@ -27,7 +27,7 @@ pub(super) async fn query<C: GraphQlClient>(
     client: &C,
     sponsor: SuiAddress,
     budget: u64,
-    exclude: Vec<ObjectId>,
+    exclude: Vec<SuiAddress>,
 ) -> Result<Vec<ObjectRef>, Error<C::Error>> {
     let mut vars = Variables {
         address: sponsor,
@@ -159,7 +159,7 @@ struct CoinConnection {
 #[derive(cynic::QueryFragment, Clone, Debug)]
 struct Coin {
     #[cynic(rename = "address")]
-    object_id: ObjectId,
+    object_id: SuiAddress,
     version: Version,
     digest: Option<Digest>,
     coin_balance: Option<BigInt<u64>>,

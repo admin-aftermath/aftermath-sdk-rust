@@ -1,11 +1,11 @@
-use af_sui_types::ObjectId;
+use af_sui_types::Address;
 use clap::Parser;
 use sui_gql_client::queries::GraphQlClientExt as _;
 use sui_gql_client::reqwest::ReqwestClient;
 
 #[derive(Parser)]
 struct Args {
-    packages: Vec<ObjectId>,
+    packages: Vec<Address>,
     #[arg(long, default_value = "https://sui-testnet.mystenlabs.com/graphql")]
     rpc: String,
 }

@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use std::fmt;
 use std::fmt::{Display, Formatter, Write};
 
-use af_sui_types::{Address as SuiAddress, ObjectId, StructTag};
+use af_sui_types::{Address as SuiAddress, StructTag};
 use colored::Colorize;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
@@ -148,7 +148,7 @@ pub enum SuiMoveValue {
     Address(SuiAddress),
     Vector(Vec<SuiMoveValue>),
     String(String),
-    UID { id: ObjectId },
+    UID { id: SuiAddress },
     Struct(SuiMoveStruct),
     Option(Box<Option<SuiMoveValue>>),
     Variant(SuiMoveVariant),

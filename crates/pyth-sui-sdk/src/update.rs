@@ -1,5 +1,5 @@
 use af_ptbuilder::{ProgrammableTransactionBuilder, ptbuilder};
-use af_sui_types::{Argument, ObjectArg, ObjectId};
+use af_sui_types::{Address, Argument, ObjectArg};
 use bytes::Bytes;
 use serde::{Deserialize, Serialize};
 
@@ -114,8 +114,8 @@ impl ProgrammableTransactionBuilder {
     /// * `wormhole_pkg`: Address of the Wormhole package.
     fn update_pyth_price_info(
         &mut self,
-        pyth_pkg: ObjectId,
-        wormhole_pkg: ObjectId,
+        pyth_pkg: Address,
+        wormhole_pkg: Address,
         arguments: PtbArguments,
         update: UpdatePayload,
     ) -> Result<(), af_ptbuilder::Error> {

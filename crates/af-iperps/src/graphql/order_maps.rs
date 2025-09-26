@@ -1,4 +1,4 @@
-use af_sui_types::{Address, ObjectId};
+use af_sui_types::Address;
 use enum_as_inner::EnumAsInner;
 use sui_gql_client::queries::Error;
 use sui_gql_client::queries::fragments::DynamicFieldName;
@@ -13,15 +13,15 @@ use crate::keys;
 /// [`order_maps`]: super::GraphQlClientExt::order_maps
 #[derive(Clone, Copy, Debug)]
 pub struct OrderMaps {
-    pub orderbook: ObjectId,
-    pub asks: ObjectId,
-    pub bids: ObjectId,
+    pub orderbook: Address,
+    pub asks: Address,
+    pub bids: Address,
 }
 
 pub(super) async fn query<C: GraphQlClient>(
     client: &C,
     package: Address,
-    ch: ObjectId,
+    ch: Address,
 ) -> Result<OrderMaps, Error<C::Error>> {
     let vars = Variables {
         ch,
@@ -88,7 +88,7 @@ fn gql_output() {
 
     let package = Address::ZERO;
     let vars = Variables {
-        ch: ObjectId::ZERO,
+        ch: Address::ZERO,
         orderbook: keys::Orderbook::new()
             .move_instance(package)
             .try_into()
@@ -137,7 +137,7 @@ fn gql_output() {
 
 #[derive(cynic::QueryVariables, Debug)]
 struct Variables {
-    ch: ObjectId,
+    ch: Address,
     orderbook: DynamicFieldName,
     asks: DynamicFieldName,
     bids: DynamicFieldName,
@@ -177,7 +177,7 @@ enum OrderbookDofValue {
 #[cynic(graphql_type = "MoveObject", variables = "Variables")]
 struct OrderbookMoveObject {
     #[cynic(alias, rename = "address")]
-    id: ObjectId,
+    id: Address,
     #[arguments(name: $asks)]
     #[cynic(alias, rename = "dynamicObjectField")]
     asks: Option<MapDof>,
@@ -204,5 +204,5 @@ enum MapDofValue {
 #[cynic(graphql_type = "MoveObject")]
 struct MapMoveObject {
     #[cynic(alias, rename = "address")]
-    id: ObjectId,
+    id: Address,
 }

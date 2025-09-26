@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use af_sui_types::{Address as SuiAddress, CheckpointSequenceNumber, Identifier, ObjectId};
+use af_sui_types::{Address as SuiAddress, Address, CheckpointSequenceNumber, Identifier};
 use serde::{Deserialize, Serialize};
 use serde_with::base64::Base64;
 use serde_with::{DisplayFromStr, IfIsHumanReadable, serde_as};
@@ -74,7 +74,7 @@ pub struct SuiValidatorSummary {
 
     #[serde_as(as = "IfIsHumanReadable<BigInt<u64>, _>")]
     pub voting_power: u64,
-    pub operation_cap_id: ObjectId,
+    pub operation_cap_id: Address,
     #[serde_as(as = "IfIsHumanReadable<BigInt<u64>, _>")]
     pub gas_price: u64,
     #[serde_as(as = "IfIsHumanReadable<BigInt<u64>, _>")]
@@ -88,7 +88,7 @@ pub struct SuiValidatorSummary {
 
     // Staking pool information
     /// ID of the staking pool object.
-    pub staking_pool_id: ObjectId,
+    pub staking_pool_id: Address,
     /// The epoch at which this pool became active.
     #[serde_as(as = "Option<IfIsHumanReadable<BigInt<u64>, _>>")]
     pub staking_pool_activation_epoch: Option<u64>,
@@ -114,7 +114,7 @@ pub struct SuiValidatorSummary {
     #[serde_as(as = "IfIsHumanReadable<BigInt<u64>, _>")]
     pub pending_pool_token_withdraw: u64,
     /// ID of the exchange rate table object.
-    pub exchange_rates_id: ObjectId,
+    pub exchange_rates_id: Address,
     /// Number of exchange rates in the table.
     #[serde_as(as = "IfIsHumanReadable<BigInt<u64>, _>")]
     pub exchange_rates_size: u64,
@@ -157,7 +157,7 @@ pub struct EndOfEpochInfo {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct MoveFunctionName {
-    pub package: ObjectId,
+    pub package: Address,
     #[serde_as(as = "DisplayFromStr")]
     pub module: Identifier,
     #[serde_as(as = "DisplayFromStr")]

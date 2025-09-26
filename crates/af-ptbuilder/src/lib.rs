@@ -8,6 +8,8 @@
 //! approach.
 
 #[doc(no_inline)]
+pub use af_sui_types::Address;
+#[doc(no_inline)]
 pub use af_sui_types::Argument;
 #[doc(hidden)]
 pub use af_sui_types::IdentStr;
@@ -15,8 +17,6 @@ pub use af_sui_types::IdentStr;
 pub use af_sui_types::MoveCall;
 #[doc(inline)]
 pub use af_sui_types::ObjectArg;
-#[doc(no_inline)]
-pub use af_sui_types::ObjectId;
 #[doc(no_inline)]
 pub use af_sui_types::TypeTag;
 use af_sui_types::{Identifier, ProgrammableTransaction};
@@ -50,7 +50,7 @@ pub enum Error {
         {old_value:?} is not compatible with {new_value:?}"
 )]
 pub struct MismatchedObjArgKindsError {
-    pub id: ObjectId,
+    pub id: Address,
     pub old_value: Input,
     pub new_value: Input,
 }
@@ -195,7 +195,7 @@ impl ProgrammableTransactionBuilder {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 enum BuilderArg {
-    Object(ObjectId),
+    Object(Address),
     Pure(Vec<u8>),
     ForcedNonUniquePure(usize),
 }
@@ -236,6 +236,7 @@ impl TryFrom<ProgrammableTransaction> for ProgrammableTransactionBuilder {
                 Receiving(oref) => {
                     self_.obj(ObjectArg::Receiving(oref.into_parts()))?;
                 }
+                _ => panic!("unknown Input variant"),
             }
         }
         for command in commands {
@@ -274,7 +275,7 @@ pub enum Command {
     MergeCoins(Argument, Vec<Argument>),
     /// Publishes a Move package. It takes the package bytes and a list of the package's transitive
     /// dependencies to link against on-chain.
-    Publish(Vec<Vec<u8>>, Vec<ObjectId>),
+    Publish(Vec<Vec<u8>>, Vec<Address>),
     /// `forall T: Vec<T> -> vector<T>`
     /// Given n-values of the same type, it constructs a vector. For non objects or an empty vector,
     /// the type tag must be specified.
@@ -286,7 +287,7 @@ pub enum Command {
     /// 3. The object ID of the package being upgraded.
     /// 4. An argument holding the `UpgradeTicket` that must have been produced from an earlier command in the same
     ///    programmable transaction.
-    Upgrade(Vec<Vec<u8>>, Vec<ObjectId>, ObjectId, Argument),
+    Upgrade(Vec<Vec<u8>>, Vec<Address>, Address, Argument),
 }
 
 impl From<af_sui_types::Command> for Command {
@@ -302,6 +303,7 @@ impl From<af_sui_types::Command> for Command {
             Upgrade(args) => {
                 Self::Upgrade(args.modules, args.dependencies, args.package, args.ticket)
             }
+            _ => panic!("unknown Command variant"),
         }
     }
 }
@@ -346,7 +348,7 @@ impl From<Command> for af_sui_types::Command {
 
 impl Command {
     pub fn move_call(
-        package: ObjectId,
+        package: Address,
         module: Identifier,
         function: Identifier,
         type_arguments: Vec<TypeTag>,
@@ -389,12 +391,12 @@ impl Command {
 ///
 /// ## Packages
 ///
-/// Move functions expect the [`ObjectId`] of their package in the transaction payload (see
+/// Move functions expect the [`Address`] of their package in the transaction payload (see
 /// [`MoveCall`]). One can declare the packages using the syntax
 /// ```no_run
-/// # use af_sui_types::ObjectId;
-/// let package_name = ObjectId::new(rand::random());
-/// let object_id = ObjectId::new(rand::random());
+/// # use af_sui_types::Address;
+/// let package_name = Address::new(rand::random());
+/// let object_id = Address::new(rand::random());
 /// af_ptbuilder::ptb!(
 ///     package package_name;
 ///     package package_name: object_id;
@@ -424,10 +426,10 @@ impl Command {
 /// declare the two types of inputs using the syntax
 /// ```no_run
 /// # use af_sui_types::ObjectArg;
-/// # use af_sui_types::ObjectId;
+/// # use af_sui_types::Address;
 /// let clock = ObjectArg::CLOCK_IMM;
 /// let object = ObjectArg::SharedObject {
-///     id: ObjectId::new(rand::random()),
+///     id: Address::new(rand::random()),
 ///     initial_shared_version: 1,
 ///     mutable: true
 /// };
@@ -452,7 +454,7 @@ impl Command {
 /// Use the syntax
 /// ```no_run
 /// # af_ptbuilder::ptb!(
-/// # package package: af_sui_types::ObjectId::new(rand::random());
+/// # package package: af_sui_types::Address::new(rand::random());
 /// # type T = af_sui_types::TypeTag::U8;
 /// # input pure arg: &0_u32;
 ///     package::module::function<T>(arg);
@@ -467,10 +469,10 @@ impl Command {
 /// Functions that return can have their results assigned to a value or unpacked into several ones:
 /// ```no_run
 /// # use af_sui_types::ObjectArg;
-/// # use af_sui_types::ObjectId;
+/// # use af_sui_types::Address;
 /// # let clock = ObjectArg::CLOCK_IMM;
 /// # af_ptbuilder::ptb!(
-/// # package package: ObjectId::new(rand::random());
+/// # package package: Address::new(rand::random());
 /// # input obj a: clock;
 /// # input obj b: clock;
 /// # input obj arg: clock;
@@ -497,16 +499,16 @@ impl Command {
 ///
 /// ```no_run
 /// use af_ptbuilder::ptb;
-/// use af_sui_types::{address, object_id, ObjectArg, TypeTag};
+/// use af_sui_types::{Address, ObjectArg, TypeTag};
 ///
-/// let foo = object_id(b"0xbeef");
+/// let foo = Address::from_hex_unwrap(b"0xbeef");
 /// let otw: TypeTag = "0x2::sui::SUI".parse()?;
 /// let registry = ObjectArg::SharedObject {
-///     id: object_id(b"0xdeed"),
+///     id: Address::from_hex_unwrap(b"0xdeed"),
 ///     initial_shared_version: 1,
 ///     mutable: true,
 /// };
-/// let sender = address(b"0xabcd");
+/// let sender = Address::from_hex_unwrap(b"0xabcd");
 ///
 /// ptb!(
 ///     package foo;
@@ -564,7 +566,7 @@ macro_rules! ptbuilder {
         package $name:ident $value:literal;
         $($tt:tt)*
     }) => {
-        let $name: $crate::ObjectId = $value.parse()?;
+        let $name: $crate::Address = $value.parse()?;
 
         $crate::ptbuilder!($builder { $($tt)* });
     };
@@ -573,7 +575,7 @@ macro_rules! ptbuilder {
         package $name:ident;
         $($tt:tt)*
     }) => {
-        let $name: $crate::ObjectId = $name;
+        let $name: $crate::Address = $name;
 
         $crate::ptbuilder!($builder { $($tt)* });
     };
@@ -582,7 +584,7 @@ macro_rules! ptbuilder {
         package $name:ident: $value:expr_2021;
         $($tt:tt)*
     }) => {
-        let $name: $crate::ObjectId = $value;
+        let $name: $crate::Address = $value;
 
         $crate::ptbuilder!($builder { $($tt)* });
     };

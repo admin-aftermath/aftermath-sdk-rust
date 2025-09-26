@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use af_sui_types::{CheckpointDigest, EpochId, GasCostSummary, TransactionDigest};
+use af_sui_types::{Digest, EpochId, GasCostSummary};
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use sui_sdk_types::{
@@ -27,14 +27,14 @@ pub struct Checkpoint {
     #[serde_as(as = "BigInt<u64>")]
     pub sequence_number: CheckpointSequenceNumber,
     /// Checkpoint digest
-    pub digest: CheckpointDigest,
+    pub digest: Digest,
     /// Total number of transactions committed since genesis, including those in this
     /// checkpoint.
     #[serde_as(as = "BigInt<u64>")]
     pub network_total_transactions: u64,
     /// Digest of the previous checkpoint
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub previous_digest: Option<CheckpointDigest>,
+    pub previous_digest: Option<Digest>,
     /// The running total gas costs of all transactions included in the current epoch so far
     /// until this checkpoint.
     #[serde_as(as = "serde_with::FromInto<GasCostSummaryJson>")]
@@ -48,7 +48,7 @@ pub struct Checkpoint {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub end_of_epoch_data: Option<EndOfEpochData>,
     /// Transaction digests
-    pub transactions: Vec<TransactionDigest>,
+    pub transactions: Vec<Digest>,
 
     /// Commitments to checkpoint state
     pub checkpoint_commitments: Vec<CheckpointCommitment>,
@@ -61,5 +61,5 @@ pub struct Checkpoint {
 #[serde(untagged)]
 pub enum CheckpointId {
     SequenceNumber(#[serde_as(as = "BigInt<u64>")] CheckpointSequenceNumber),
-    Digest(CheckpointDigest),
+    Digest(Digest),
 }

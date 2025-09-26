@@ -9,15 +9,13 @@ use std::str::FromStr;
 
 use af_sui_types::{
     Address as SuiAddress,
+    Digest,
     Identifier,
     MoveObjectType,
     Object,
     ObjectArg,
-    ObjectDigest,
-    ObjectId,
     ObjectRef,
     StructTag,
-    TransactionDigest,
     TypeOrigin,
     UpgradeInfo,
 };
@@ -105,7 +103,7 @@ impl SuiObjectResponse {
         None
     }
 
-    pub fn object_id(&self) -> Result<ObjectId, MissingObjectIdError> {
+    pub fn object_id(&self) -> Result<SuiAddress, MissingObjectIdError> {
         match (&self.data, &self.error) {
             (Some(obj_data), None) => Ok(obj_data.object_id),
             (None, Some(SuiObjectResponseError::NotExists { object_id })) => Ok(*object_id),
@@ -160,9 +158,9 @@ impl PartialOrd for SuiObjectResponse {
 #[serde(tag = "code", rename = "ObjectResponseError", rename_all = "camelCase")]
 pub enum SuiObjectResponseError {
     #[error("Object {:?} does not exist.", object_id)]
-    NotExists { object_id: ObjectId },
+    NotExists { object_id: SuiAddress },
     #[error("Cannot find dynamic field for parent object {:?}.", parent_object_id)]
-    DynamicFieldNotFound { parent_object_id: ObjectId },
+    DynamicFieldNotFound { parent_object_id: SuiAddress },
     #[error(
         "Object has been deleted object_id: {:?} at version: {:?} in digest {:?}",
         object_id,
@@ -170,11 +168,11 @@ pub enum SuiObjectResponseError {
         digest
     )]
     Deleted {
-        object_id: ObjectId,
+        object_id: SuiAddress,
         /// Object version.
         version: Version,
         /// Base64 string representing the object digest
-        digest: ObjectDigest,
+        digest: Digest,
     },
     #[error("Unknown Error.")]
     Unknown,
@@ -222,7 +220,7 @@ pub enum FullObjectDataError {
     MissingPreviousTransaction,
     #[error("Missing storage rebate")]
     MissingStorageRebate,
-    #[error("MoveObject BCS doesn't start with ObjectId")]
+    #[error("MoveObject BCS doesn't start with SuiAddress")]
     InvalidBcs,
     #[error("Invalid identifier: {ident}\nReason: {source}")]
     InvalidIdentifier {
@@ -236,12 +234,12 @@ pub enum FullObjectDataError {
 #[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase", rename = "ObjectData")]
 pub struct SuiObjectData {
-    pub object_id: ObjectId,
+    pub object_id: SuiAddress,
     /// Object version.
     #[serde_as(as = "BigInt<u64>")]
     pub version: Version,
     /// Base64 string representing the object digest
-    pub digest: ObjectDigest,
+    pub digest: Digest,
     /// The type of the object. Default to be None unless SuiObjectDataOptions.showType is set to true
     #[serde_as(as = "Option<DisplayFromStr>")]
     #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
@@ -253,7 +251,7 @@ pub struct SuiObjectData {
     /// The digest of the transaction that created or last mutated this object. Default to be None unless
     /// SuiObjectDataOptions.showPreviousTransaction is set to true
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub previous_transaction: Option<TransactionDigest>,
+    pub previous_transaction: Option<Digest>,
     /// The amount of SUI we would rebate if this object gets deleted.
     /// This number is re-calculated each time the object is mutated based on
     /// the present storage gas price.
@@ -686,11 +684,11 @@ impl SuiObjectDataOptions {
 #[serde(rename_all = "camelCase", rename = "ObjectRef")]
 pub struct SuiObjectRef {
     /// Hex code as string representing the object id
-    pub object_id: ObjectId,
+    pub object_id: SuiAddress,
     /// Object version.
     pub version: Version,
     /// Base64 string representing the object digest
-    pub digest: ObjectDigest,
+    pub digest: Digest,
 }
 
 impl SuiObjectRef {
@@ -897,12 +895,12 @@ impl SuiRawMoveObject {
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq)]
 #[serde(rename = "RawMovePackage", rename_all = "camelCase")]
 pub struct SuiRawMovePackage {
-    pub id: ObjectId,
+    pub id: SuiAddress,
     pub version: Version,
     #[serde_as(as = "BTreeMap<_, Base64>")]
     pub module_map: BTreeMap<String, Vec<u8>>,
     pub type_origin_table: Vec<TypeOrigin>,
-    pub linkage_table: BTreeMap<ObjectId, UpgradeInfo>,
+    pub linkage_table: BTreeMap<SuiAddress, UpgradeInfo>,
 }
 
 /// Errors for [`SuiPastObjectResponse`].
@@ -910,7 +908,7 @@ pub struct SuiRawMovePackage {
 pub enum SuiPastObjectResponseError {
     #[error("Could not find the referenced object {object_id:?} at version {version:?}.")]
     ObjectNotFound {
-        object_id: ObjectId,
+        object_id: SuiAddress,
         version: Option<Version>,
     },
 
@@ -920,7 +918,7 @@ pub enum SuiPastObjectResponseError {
             is higher than the latest {latest_version:?}"
     )]
     ObjectSequenceNumberTooHigh {
-        object_id: ObjectId,
+        object_id: SuiAddress,
         asked_version: Version,
         latest_version: Version,
     },
@@ -936,14 +934,14 @@ pub enum SuiPastObjectResponse {
     /// The object exists and is found with this version
     VersionFound(SuiObjectData),
     /// The object does not exist
-    ObjectNotExists(ObjectId),
+    ObjectNotExists(SuiAddress),
     /// The object is found to be deleted with this version
     ObjectDeleted(SuiObjectRef),
     /// The object exists but not found with this version
-    VersionNotFound(ObjectId, Version),
+    VersionNotFound(SuiAddress, Version),
     /// The asked object version is higher than the latest
     VersionTooHigh {
-        object_id: ObjectId,
+        object_id: SuiAddress,
         asked_version: Version,
         latest_version: Version,
     },
@@ -1014,13 +1012,13 @@ pub struct SuiMovePackage {
 }
 
 pub type QueryObjectsPage = Page<SuiObjectResponse, CheckpointedObjectId>;
-pub type ObjectsPage = Page<SuiObjectResponse, ObjectId>;
+pub type ObjectsPage = Page<SuiObjectResponse, SuiAddress>;
 
 #[serde_as]
 #[derive(Debug, Deserialize, Serialize, Clone, Copy, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct CheckpointedObjectId {
-    pub object_id: ObjectId,
+    pub object_id: SuiAddress,
     #[serde_as(as = "Option<BigInt<u64>>")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub at_checkpoint: Option<Version>,
@@ -1031,7 +1029,7 @@ pub struct CheckpointedObjectId {
 #[serde(rename = "GetPastObjectRequest", rename_all = "camelCase")]
 pub struct SuiGetPastObjectRequest {
     /// the ID of the queried object
-    pub object_id: ObjectId,
+    pub object_id: SuiAddress,
     /// the version of the queried object.
     #[serde_as(as = "BigInt<u64>")]
     pub version: Version,
@@ -1044,11 +1042,11 @@ pub enum SuiObjectDataFilter {
     MatchAny(Vec<SuiObjectDataFilter>),
     MatchNone(Vec<SuiObjectDataFilter>),
     /// Query by type a specified Package.
-    Package(ObjectId),
+    Package(SuiAddress),
     /// Query by type a specified Move module.
     MoveModule {
         /// the Move package ID
-        package: ObjectId,
+        package: SuiAddress,
         /// the module name
         #[serde_as(as = "DisplayFromStr")]
         module: Identifier,
@@ -1057,10 +1055,10 @@ pub enum SuiObjectDataFilter {
     // StructType(#[serde_as(as = "SuiStructTag")] StructTag),
     StructType(#[serde_as(as = "DisplayFromStr")] StructTag),
     AddressOwner(SuiAddress),
-    ObjectOwner(ObjectId),
-    ObjectId(ObjectId),
+    ObjectOwner(SuiAddress),
+    SuiAddress(SuiAddress),
     // allow querying for multiple object ids
-    ObjectIds(Vec<ObjectId>),
+    ObjectIds(Vec<SuiAddress>),
     Version(#[serde_as(as = "BigInt<u64>")] u64),
 }
 

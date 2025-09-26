@@ -1,5 +1,5 @@
 use af_move_type::MoveInstance;
-use af_sui_types::{ObjectId, TypeTag, Version};
+use af_sui_types::{Address, TypeTag, Version};
 use futures::Stream;
 use sui_gql_client::GraphQlClient;
 use sui_gql_client::queries::GraphQlClientExt as _;
@@ -9,9 +9,9 @@ use super::Result as QResult;
 
 pub(super) fn query<C>(
     client: &C,
-    registry_address: ObjectId,
+    registry_address: Address,
     version: Option<Version>,
-) -> impl Stream<Item = QResult<ObjectId, C>> + '_
+) -> impl Stream<Item = QResult<Address, C>> + '_
 where
     C: GraphQlClient,
 {

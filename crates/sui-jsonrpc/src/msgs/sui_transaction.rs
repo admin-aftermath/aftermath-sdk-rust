@@ -7,17 +7,12 @@ use std::str::FromStr;
 
 use af_sui_types::{
     Address as SuiAddress,
-    CheckpointDigest,
-    ConsensusCommitDigest,
+    Digest,
     EpochId,
     GasCostSummary,
-    ObjectDigest,
-    ObjectId,
     ObjectRef,
     SUI_FRAMEWORK_ADDRESS,
     StructTag,
-    TransactionDigest,
-    TransactionEventsDigest,
     TypeTag,
 };
 use enum_dispatch::enum_dispatch;
@@ -67,7 +62,7 @@ impl SuiTransactionBlockResponseQuery {
     }
 }
 
-pub type TransactionBlocksPage = Page<SuiTransactionBlockResponse, TransactionDigest>;
+pub type TransactionBlocksPage = Page<SuiTransactionBlockResponse, Digest>;
 
 #[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq, Default)]
 #[serde(
@@ -195,7 +190,7 @@ pub enum ExecuteTransactionRequestType {
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase", rename = "TransactionBlockResponse")]
 pub struct SuiTransactionBlockResponse {
-    pub digest: TransactionDigest,
+    pub digest: Digest,
     /// Transaction input data
     #[serde(skip_serializing_if = "Option::is_none")]
     pub transaction: Option<SuiTransactionBlock>,
@@ -229,7 +224,7 @@ pub struct SuiTransactionBlockResponse {
 }
 
 impl SuiTransactionBlockResponse {
-    pub fn new(digest: TransactionDigest) -> Self {
+    pub fn new(digest: Digest) -> Self {
         Self {
             digest,
             ..Default::default()
@@ -319,7 +314,7 @@ impl SuiTransactionBlockResponse {
         Ok(())
     }
 
-    pub fn published_package_id(&self) -> Result<ObjectId, SuiTransactionBlockResponseError> {
+    pub fn published_package_id(&self) -> Result<SuiAddress, SuiTransactionBlockResponseError> {
         for change in self.get_object_changes()? {
             if let ObjectChange::Published { package_id, .. } = change {
                 return Ok(*package_id);
@@ -542,7 +537,7 @@ impl Display for SuiTransactionBlockKind {
                 writeln!(writer, "Transaction Kind: Consensus Commit Prologue V2")?;
                 writeln!(
                     writer,
-                    "Epoch: {}, Round: {}, Timestamp: {}, ConsensusCommitDigest: {}",
+                    "Epoch: {}, Round: {}, Timestamp: {}, Digest: {}",
                     p.epoch, p.round, p.commit_timestamp_ms, p.consensus_commit_digest
                 )?;
             }
@@ -550,7 +545,7 @@ impl Display for SuiTransactionBlockKind {
                 writeln!(writer, "Transaction Kind: Consensus Commit Prologue V3")?;
                 writeln!(
                     writer,
-                    "Epoch: {}, Round: {}, SubDagIndex: {:?}, Timestamp: {}, ConsensusCommitDigest: {}",
+                    "Epoch: {}, Round: {}, SubDagIndex: {:?}, Timestamp: {}, Digest: {}",
                     p.epoch,
                     p.round,
                     p.sub_dag_index,
@@ -637,15 +632,15 @@ pub trait SuiTransactionBlockEffectsAPI {
     fn unwrapped_then_deleted(&self) -> &[SuiObjectRef];
     fn wrapped(&self) -> &[SuiObjectRef];
     fn gas_object(&self) -> &OwnedObjectRef;
-    fn events_digest(&self) -> Option<&TransactionEventsDigest>;
-    fn dependencies(&self) -> &[TransactionDigest];
+    fn events_digest(&self) -> Option<&Digest>;
+    fn dependencies(&self) -> &[Digest];
     fn executed_epoch(&self) -> EpochId;
-    fn transaction_digest(&self) -> &TransactionDigest;
+    fn transaction_digest(&self) -> &Digest;
     fn gas_cost_summary(&self) -> &GasCostSummary;
 
     /// Return an iterator of mutated objects, but excluding the gas object.
     fn mutated_excluding_gas(&self) -> Vec<OwnedObjectRef>;
-    fn modified_at_versions(&self) -> Vec<(ObjectId, Version)>;
+    fn modified_at_versions(&self) -> Vec<(SuiAddress, Version)>;
     fn all_changed_objects(&self) -> Vec<(&OwnedObjectRef, WriteKind)>;
     fn all_deleted_objects(&self) -> Vec<(&SuiObjectRef, DeleteKind)>;
 }
@@ -680,7 +675,7 @@ pub enum DeleteKind {
     rename_all = "camelCase"
 )]
 pub struct SuiTransactionBlockEffectsModifiedAtVersions {
-    object_id: ObjectId,
+    object_id: SuiAddress,
     #[serde_as(as = "BigInt<u64>")]
     sequence_number: Version,
 }
@@ -705,7 +700,7 @@ pub struct SuiTransactionBlockEffectsV1 {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub shared_objects: Vec<SuiObjectRef>,
     /// The transaction digest
-    pub transaction_digest: TransactionDigest,
+    pub transaction_digest: Digest,
     /// ObjectRef and owner of new objects created.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub created: Vec<OwnedObjectRef>,
@@ -732,10 +727,10 @@ pub struct SuiTransactionBlockEffectsV1 {
     /// The digest of the events emitted during execution,
     /// can be None if the transaction does not emit any event.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub events_digest: Option<TransactionEventsDigest>,
+    pub events_digest: Option<Digest>,
     /// The set of transaction digests this transaction depends on.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub dependencies: Vec<TransactionDigest>,
+    pub dependencies: Vec<Digest>,
 }
 
 impl SuiTransactionBlockEffectsAPI for SuiTransactionBlockEffectsV1 {
@@ -769,10 +764,10 @@ impl SuiTransactionBlockEffectsAPI for SuiTransactionBlockEffectsV1 {
     fn gas_object(&self) -> &OwnedObjectRef {
         &self.gas_object
     }
-    fn events_digest(&self) -> Option<&TransactionEventsDigest> {
+    fn events_digest(&self) -> Option<&Digest> {
         self.events_digest.as_ref()
     }
-    fn dependencies(&self) -> &[TransactionDigest] {
+    fn dependencies(&self) -> &[Digest] {
         &self.dependencies
     }
 
@@ -780,7 +775,7 @@ impl SuiTransactionBlockEffectsAPI for SuiTransactionBlockEffectsV1 {
         self.executed_epoch
     }
 
-    fn transaction_digest(&self) -> &TransactionDigest {
+    fn transaction_digest(&self) -> &Digest {
         &self.transaction_digest
     }
 
@@ -796,7 +791,7 @@ impl SuiTransactionBlockEffectsAPI for SuiTransactionBlockEffectsV1 {
             .collect()
     }
 
-    fn modified_at_versions(&self) -> Vec<(ObjectId, Version)> {
+    fn modified_at_versions(&self) -> Vec<(SuiAddress, Version)> {
         self.modified_at_versions
             .iter()
             .map(|v| (v.object_id, v.sequence_number))
@@ -1242,7 +1237,7 @@ impl Display for SuiTransactionBlock {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SuiGenesisTransaction {
-    pub objects: Vec<ObjectId>,
+    pub objects: Vec<SuiAddress>,
 }
 
 #[serde_as]
@@ -1265,7 +1260,7 @@ pub struct SuiConsensusCommitPrologueV2 {
     pub round: u64,
     #[serde_as(as = "BigInt<u64>")]
     pub commit_timestamp_ms: u64,
-    pub consensus_commit_digest: ConsensusCommitDigest,
+    pub consensus_commit_digest: Digest,
 }
 
 #[serde_as]
@@ -1279,7 +1274,7 @@ pub struct SuiConsensusCommitPrologueV3 {
     pub sub_dag_index: Option<u64>,
     #[serde_as(as = "BigInt<u64>")]
     pub commit_timestamp_ms: u64,
-    pub consensus_commit_digest: ConsensusCommitDigest,
+    pub consensus_commit_digest: Digest,
     pub consensus_determined_version_assignments: ConsensusDeterminedVersionAssignments,
 }
 
@@ -1320,7 +1315,7 @@ pub enum SuiEndOfEpochTransactionKind {
     AuthenticatorStateExpire(SuiAuthenticatorStateExpire),
     RandomnessStateCreate,
     CoinDenyListStateCreate,
-    BridgeStateCreate(CheckpointDigest),
+    BridgeStateCreate(Digest),
     BridgeCommitteeUpdate(Version),
 }
 
@@ -1362,12 +1357,12 @@ pub struct SuiJWK {
 #[serde(rename = "InputObjectKind")]
 pub enum SuiInputObjectKind {
     // A Move package, must be immutable.
-    MovePackage(ObjectId),
+    MovePackage(SuiAddress),
     // A Move object, either immutable, or owned mutable.
     ImmOrOwnedMoveObject(SuiObjectRef),
     // A Move object that's shared and mutable.
     SharedMoveObject {
-        id: ObjectId,
+        id: SuiAddress,
         #[serde_as(as = "BigInt<u64>")]
         initial_shared_version: Version,
         #[serde(default)]
@@ -1418,9 +1413,9 @@ pub enum SuiCommand {
     MergeCoins(SuiArgument, Vec<SuiArgument>),
     /// Publishes a Move package. It takes the package bytes and a list of the package's transitive
     /// dependencies to link against on-chain.
-    Publish(Vec<ObjectId>),
+    Publish(Vec<SuiAddress>),
     /// Upgrades a Move package
-    Upgrade(Vec<ObjectId>, ObjectId, SuiArgument),
+    Upgrade(Vec<SuiAddress>, SuiAddress, SuiArgument),
     /// `forall T: Vec<T> -> vector<T>`
     /// Given n-values of the same type, it constructs a vector. For non objects or an empty vector,
     /// the type tag must be specified.
@@ -1506,7 +1501,7 @@ impl Display for SuiArgument {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SuiProgrammableMoveCall {
     /// The package containing the module and function.
-    pub package: ObjectId,
+    pub package: SuiAddress,
     /// The specific module in the package containing the function.
     pub module: String,
     /// The function to be called.
@@ -1589,13 +1584,13 @@ pub enum RPCTransactionRequestParams {
 #[serde(rename_all = "camelCase")]
 pub struct TransferObjectParams {
     pub recipient: SuiAddress,
-    pub object_id: ObjectId,
+    pub object_id: SuiAddress,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MoveCallParams {
-    pub package_object_id: ObjectId,
+    pub package_object_id: SuiAddress,
     pub module: String,
     pub function: String,
     #[serde(default)]
@@ -1623,7 +1618,7 @@ pub struct OwnedObjectRef {
 }
 
 impl OwnedObjectRef {
-    pub fn object_id(&self) -> ObjectId {
+    pub fn object_id(&self) -> SuiAddress {
         self.reference.object_id
     }
     pub fn version(&self) -> Version {
@@ -1648,7 +1643,7 @@ impl SuiCallArg {
         }
     }
 
-    pub fn object(&self) -> Option<&ObjectId> {
+    pub fn object(&self) -> Option<&SuiAddress> {
         match self {
             SuiCallArg::Object(SuiObjectArg::SharedObject { object_id, .. })
             | SuiCallArg::Object(SuiObjectArg::ImmOrOwnedObject { object_id, .. })
@@ -1685,16 +1680,16 @@ pub enum SuiObjectArg {
     // A Move object, either immutable, or owned mutable.
     #[serde(rename_all = "camelCase")]
     ImmOrOwnedObject {
-        object_id: ObjectId,
+        object_id: SuiAddress,
         #[serde_as(as = "BigInt<u64>")]
         version: Version,
-        digest: ObjectDigest,
+        digest: Digest,
     },
     // A Move object that's shared.
     // SharedObject::mutable controls whether caller asks for a mutable reference to shared object.
     #[serde(rename_all = "camelCase")]
     SharedObject {
-        object_id: ObjectId,
+        object_id: SuiAddress,
         #[serde_as(as = "BigInt<u64>")]
         initial_shared_version: Version,
         mutable: bool,
@@ -1702,10 +1697,10 @@ pub enum SuiObjectArg {
     // A reference to a Move object that's going to be received in the transaction.
     #[serde(rename_all = "camelCase")]
     Receiving {
-        object_id: ObjectId,
+        object_id: SuiAddress,
         #[serde_as(as = "BigInt<u64>")]
         version: Version,
-        digest: ObjectDigest,
+        digest: Digest,
     },
 }
 
@@ -1717,16 +1712,16 @@ pub enum TransactionFilter {
     Checkpoint(#[serde_as(as = "IfIsHumanReadable<BigInt<u64>, _>")] Version),
     /// Query by move function.
     MoveFunction {
-        package: ObjectId,
+        package: SuiAddress,
         module: Option<String>,
         function: Option<String>,
     },
     /// Query by input object.
-    InputObject(ObjectId),
+    InputObject(SuiAddress),
     /// Query by changed object, including created, mutated and unwrapped objects.
-    ChangedObject(ObjectId),
+    ChangedObject(SuiAddress),
     /// Query for transactions that touch this object.
-    AffectedObject(ObjectId),
+    AffectedObject(SuiAddress),
     /// Query by sender address.
     FromAddress(SuiAddress),
     /// Query by recipient address.

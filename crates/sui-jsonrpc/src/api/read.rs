@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use af_sui_types::{ObjectId, TransactionDigest};
+use af_sui_types::{Address, Digest};
 use jsonrpsee::proc_macros::rpc;
 use sui_sdk_types::Version;
 
@@ -26,7 +26,7 @@ pub trait ReadApi {
     #[method(name = "getTransactionBlock")]
     async fn get_transaction_block(
         &self,
-        digest: TransactionDigest,
+        digest: Digest,
         options: Option<SuiTransactionBlockResponseOptions>,
     ) -> RpcResult<SuiTransactionBlockResponse>;
 
@@ -36,7 +36,7 @@ pub trait ReadApi {
     #[method(name = "multiGetTransactionBlocks")]
     async fn multi_get_transaction_blocks(
         &self,
-        digests: Vec<TransactionDigest>,
+        digests: Vec<Digest>,
         options: Option<SuiTransactionBlockResponseOptions>,
     ) -> RpcResult<Vec<SuiTransactionBlockResponse>>;
 
@@ -44,7 +44,7 @@ pub trait ReadApi {
     #[method(name = "getObject")]
     async fn get_object(
         &self,
-        object_id: ObjectId,
+        object_id: Address,
         options: Option<SuiObjectDataOptions>,
     ) -> RpcResult<SuiObjectResponse>;
 
@@ -52,7 +52,7 @@ pub trait ReadApi {
     #[method(name = "multiGetObjects")]
     async fn multi_get_objects(
         &self,
-        object_ids: Vec<ObjectId>,
+        object_ids: Vec<Address>,
         options: Option<SuiObjectDataOptions>,
     ) -> RpcResult<Vec<SuiObjectResponse>>;
 
@@ -63,7 +63,7 @@ pub trait ReadApi {
     #[method(name = "tryGetPastObject")]
     async fn try_get_past_object(
         &self,
-        object_id: ObjectId,
+        object_id: Address,
         version: Version,
         options: Option<SuiObjectDataOptions>,
     ) -> RpcResult<SuiPastObjectResponse>;
@@ -94,7 +94,7 @@ pub trait ReadApi {
 
     /// Return transaction events.
     #[method(name = "getEvents")]
-    async fn get_events(&self, transaction_digest: TransactionDigest) -> RpcResult<Vec<SuiEvent>>;
+    async fn get_events(&self, transaction_digest: Digest) -> RpcResult<Vec<SuiEvent>>;
 
     /// Return the total number of transaction blocks known to the server.
     #[method(name = "getTotalTransactionBlocks")]

@@ -1,4 +1,4 @@
-use af_sui_types::ObjectId;
+use af_sui_types::Address;
 use color_eyre::Result;
 use serde::Serialize;
 use sui_gql_client::queries::GraphQlClientExt as _;
@@ -22,7 +22,7 @@ async fn main() -> Result<()> {
 
     #[derive(Serialize)]
     struct PriceFeedForSource {
-        source_wrapper_id: ObjectId,
+        source_wrapper_id: Address,
     }
 
     let name_val = PriceFeedForSource {

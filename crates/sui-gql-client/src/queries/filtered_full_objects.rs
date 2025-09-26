@@ -1,4 +1,4 @@
-use af_sui_types::{Address, Object, ObjectId};
+use af_sui_types::{Address, Object};
 use futures::Stream;
 use sui_gql_schema::scalars::Base64Bcs;
 
@@ -101,7 +101,7 @@ struct ObjectConnection {
 #[cynic(graphql_type = "Object")]
 struct ObjectGql {
     #[cynic(rename = "address")]
-    id: ObjectId,
+    id: Address,
     #[cynic(rename = "bcs")]
     object: Option<scalars::Base64Bcs<Object>>,
 }

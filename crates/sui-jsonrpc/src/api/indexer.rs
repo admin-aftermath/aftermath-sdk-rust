@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use af_sui_types::{Address as SuiAddress, ObjectId, TransactionDigest};
+use af_sui_types::{Address as SuiAddress, Digest};
 use jsonrpsee::proc_macros::rpc;
 
 use crate::msgs::{
@@ -33,7 +33,7 @@ pub trait IndexerApi {
         &self,
         address: SuiAddress,
         query: Option<SuiObjectResponseQuery>,
-        cursor: Option<ObjectId>,
+        cursor: Option<SuiAddress>,
         limit: Option<usize>,
     ) -> RpcResult<ObjectsPage>;
 
@@ -42,7 +42,7 @@ pub trait IndexerApi {
     async fn query_transaction_blocks(
         &self,
         query: SuiTransactionBlockResponseQuery,
-        cursor: Option<TransactionDigest>,
+        cursor: Option<Digest>,
         limit: Option<usize>,
         descending_order: Option<bool>,
     ) -> RpcResult<TransactionBlocksPage>;
@@ -69,8 +69,8 @@ pub trait IndexerApi {
     #[method(name = "getDynamicFields")]
     async fn get_dynamic_fields(
         &self,
-        parent_object_id: ObjectId,
-        cursor: Option<ObjectId>,
+        parent_object_id: SuiAddress,
+        cursor: Option<SuiAddress>,
         limit: Option<usize>,
     ) -> RpcResult<DynamicFieldPage>;
 
@@ -78,7 +78,7 @@ pub trait IndexerApi {
     #[method(name = "getDynamicFieldObject")]
     async fn get_dynamic_field_object(
         &self,
-        parent_object_id: ObjectId,
+        parent_object_id: SuiAddress,
         name: DynamicFieldName,
     ) -> RpcResult<SuiObjectResponse>;
 
@@ -92,7 +92,7 @@ pub trait IndexerApi {
     async fn resolve_name_service_names(
         &self,
         address: SuiAddress,
-        cursor: Option<ObjectId>,
+        cursor: Option<SuiAddress>,
         limit: Option<usize>,
-    ) -> RpcResult<Page<String, ObjectId>>;
+    ) -> RpcResult<Page<String, SuiAddress>>;
 }

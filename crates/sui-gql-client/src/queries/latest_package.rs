@@ -1,12 +1,12 @@
-use af_sui_types::{ObjectId, Version};
+use af_sui_types::{Address, Version};
 
 use super::Error;
 use crate::{GraphQlClient, GraphQlResponseExt as _, schema};
 
 pub(super) async fn query<C: GraphQlClient>(
     client: &C,
-    package_id: ObjectId,
-) -> super::Result<(ObjectId, Version), C> {
+    package_id: Address,
+) -> super::Result<(Address, Version), C> {
     let vars = Variables {
         address: package_id,
     };
@@ -26,7 +26,7 @@ pub(super) async fn query<C: GraphQlClient>(
 
 #[derive(cynic::QueryVariables, Clone, Debug)]
 struct Variables {
-    address: ObjectId,
+    address: Address,
 }
 
 #[derive(cynic::QueryFragment, Debug)]
@@ -38,7 +38,7 @@ struct Query {
 
 #[derive(cynic::QueryFragment, Debug)]
 struct MovePackage {
-    address: ObjectId,
+    address: Address,
     version: Version,
 }
 
@@ -49,7 +49,7 @@ fn gql_output() {
     use cynic::QueryBuilder as _;
 
     let vars = Variables {
-        address: ObjectId::ZERO,
+        address: Address::ZERO,
     };
     let operation = Query::build(vars);
     insta::assert_snapshot!(operation.query, @r###"

@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use af_sui_types::{Address as SuiAddress, ObjectId};
+use af_sui_types::Address as SuiAddress;
 use jsonrpsee::proc_macros::rpc;
 
 use crate::msgs::{DelegatedStake, SuiCommittee, SuiSystemStateSummary, ValidatorApys};
@@ -13,7 +13,7 @@ pub trait GovernanceReadApi {
     #[method(name = "getStakesByIds")]
     async fn get_stakes_by_ids(
         &self,
-        staked_sui_ids: Vec<ObjectId>,
+        staked_sui_ids: Vec<SuiAddress>,
     ) -> RpcResult<Vec<DelegatedStake>>;
 
     /// Return all [DelegatedStake].

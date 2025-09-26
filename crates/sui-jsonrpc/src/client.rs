@@ -11,7 +11,6 @@ use af_sui_types::{
     GasData,
     Object,
     ObjectArg,
-    ObjectId,
     ObjectRef,
     TransactionData,
     TransactionDataV1,
@@ -394,7 +393,11 @@ impl SuiClient {
         (*self.ws).as_ref()
     }
 
-    pub async fn get_shared_oarg(&self, id: ObjectId, mutable: bool) -> SuiClientResult<ObjectArg> {
+    pub async fn get_shared_oarg(
+        &self,
+        id: SuiAddress,
+        mutable: bool,
+    ) -> SuiClientResult<ObjectArg> {
         let data = self
             .http()
             .get_object(id, Some(SuiObjectDataOptions::new().with_owner()))
@@ -403,7 +406,7 @@ impl SuiClient {
         Ok(data.shared_object_arg(mutable)?)
     }
 
-    pub async fn get_imm_or_owned_oarg(&self, id: ObjectId) -> SuiClientResult<ObjectArg> {
+    pub async fn get_imm_or_owned_oarg(&self, id: SuiAddress) -> SuiClientResult<ObjectArg> {
         let data = self
             .http()
             .get_object(id, Some(SuiObjectDataOptions::new().with_owner()))
@@ -423,7 +426,7 @@ impl SuiClient {
         ids: Iter,
     ) -> Result<impl Iterator<Item = Result<ObjectArg, BoxError>> + use<Iter>, BoxError>
     where
-        Iter: IntoIterator<Item = ObjectId> + Send,
+        Iter: IntoIterator<Item = SuiAddress> + Send,
         Iter::IntoIter: Send,
     {
         let options = SuiObjectDataOptions::new().with_owner();
@@ -435,7 +438,7 @@ impl SuiClient {
     }
 
     /// Query the full object contents as a standard Sui type.
-    pub async fn full_object(&self, id: ObjectId) -> Result<Object, BoxError> {
+    pub async fn full_object(&self, id: SuiAddress) -> Result<Object, BoxError> {
         let options = SuiObjectDataOptions {
             show_bcs: true,
             show_owner: true,
@@ -460,7 +463,7 @@ impl SuiClient {
         ids: Iter,
     ) -> Result<impl Iterator<Item = Result<Object, BoxError>>, BoxError>
     where
-        Iter: IntoIterator<Item = ObjectId> + Send,
+        Iter: IntoIterator<Item = SuiAddress> + Send,
         Iter::IntoIter: Send,
     {
         let options = SuiObjectDataOptions {
@@ -486,7 +489,7 @@ impl SuiClient {
         options: SuiObjectDataOptions,
     ) -> SuiClientResult<Vec<SuiObjectResponse>>
     where
-        I: IntoIterator<Item = ObjectId> + Send,
+        I: IntoIterator<Item = SuiAddress> + Send,
         I::IntoIter: Send,
     {
         let mut result = Vec::new();
@@ -622,6 +625,7 @@ impl SuiClient {
                     Pure { .. } => None,
                     Shared { object_id, .. } => Some(*object_id),
                     ImmutableOrOwned(oref) | Receiving(oref) => Some(*oref.object_id()),
+                    _ => panic!("unknown Input type"),
                 })
                 .collect()
         } else {
@@ -652,7 +656,7 @@ impl SuiClient {
         &self,
         sponsor: SuiAddress,
         budget: u64,
-        exclude: &[ObjectId],
+        exclude: &[SuiAddress],
     ) -> Result<Vec<ObjectRef>, NotEnoughGasError> {
         Ok(self
             .coins_for_amount(sponsor, Some("0x2::sui::SUI".to_owned()), budget, exclude)
@@ -673,7 +677,7 @@ impl SuiClient {
         address: SuiAddress,
         coin_type: Option<String>,
         amount: u64,
-        exclude: Vec<ObjectId>,
+        exclude: Vec<SuiAddress>,
     ) -> SuiClientResult<Vec<Coin>> {
         self.coins_for_amount(address, coin_type, amount, &exclude)
             .await
@@ -708,7 +712,7 @@ impl SuiClient {
         address: SuiAddress,
         coin_type: Option<String>,
         amount: u64,
-        exclude: &[ObjectId],
+        exclude: &[SuiAddress],
     ) -> SuiClientResult<Vec<Coin>> {
         use futures_util::{TryStreamExt as _, future};
         let mut coins = vec![];
@@ -817,7 +821,7 @@ impl SuiClient {
     }
 
     /// Get the latest object reference for an ID from the node.
-    pub async fn latest_object_ref(&self, object_id: ObjectId) -> SuiClientResult<ObjectRef> {
+    pub async fn latest_object_ref(&self, object_id: SuiAddress) -> SuiClientResult<ObjectRef> {
         Ok(self
             .http()
             .get_object(object_id, Some(SuiObjectDataOptions::default()))

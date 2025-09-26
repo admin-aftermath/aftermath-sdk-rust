@@ -5,10 +5,10 @@ use std::fmt::Display;
 
 use af_sui_types::{
     Address as SuiAddress,
+    Address,
+    Digest,
     OBJECT_DIGEST_DELETED,
     OBJECT_DIGEST_WRAPPED,
-    ObjectDigest,
-    ObjectId,
     ObjectRef,
     StructTag,
 };
@@ -27,10 +27,10 @@ pub enum ObjectChange {
     /// Module published
     #[serde(rename_all = "camelCase")]
     Published {
-        package_id: ObjectId,
+        package_id: Address,
         #[serde_as(as = "BigInt<u64>")]
         version: Version,
-        digest: ObjectDigest,
+        digest: Digest,
         modules: Vec<String>,
     },
     /// Transfer objects to new address / wrap in another object
@@ -41,10 +41,10 @@ pub enum ObjectChange {
         // #[serde_as(as = "SuiStructTag")]
         #[serde_as(as = "DisplayFromStr")]
         object_type: StructTag,
-        object_id: ObjectId,
+        object_id: Address,
         #[serde_as(as = "BigInt<u64>")]
         version: Version,
-        digest: ObjectDigest,
+        digest: Digest,
     },
     /// Object mutated.
     #[serde(rename_all = "camelCase")]
@@ -54,12 +54,12 @@ pub enum ObjectChange {
         // #[serde_as(as = "SuiStructTag")]
         #[serde_as(as = "DisplayFromStr")]
         object_type: StructTag,
-        object_id: ObjectId,
+        object_id: Address,
         #[serde_as(as = "BigInt<u64>")]
         version: Version,
         #[serde_as(as = "BigInt<u64>")]
         previous_version: Version,
-        digest: ObjectDigest,
+        digest: Digest,
     },
     /// Delete object
     #[serde(rename_all = "camelCase")]
@@ -68,7 +68,7 @@ pub enum ObjectChange {
         // #[serde_as(as = "SuiStructTag")]
         #[serde_as(as = "DisplayFromStr")]
         object_type: StructTag,
-        object_id: ObjectId,
+        object_id: Address,
         #[serde_as(as = "BigInt<u64>")]
         version: Version,
     },
@@ -79,7 +79,7 @@ pub enum ObjectChange {
         // #[serde_as(as = "SuiStructTag")]
         #[serde_as(as = "DisplayFromStr")]
         object_type: StructTag,
-        object_id: ObjectId,
+        object_id: Address,
         #[serde_as(as = "BigInt<u64>")]
         version: Version,
     },
@@ -91,15 +91,15 @@ pub enum ObjectChange {
         // #[serde_as(as = "SuiStructTag")]
         #[serde_as(as = "DisplayFromStr")]
         object_type: StructTag,
-        object_id: ObjectId,
+        object_id: Address,
         #[serde_as(as = "BigInt<u64>")]
         version: Version,
-        digest: ObjectDigest,
+        digest: Digest,
     },
 }
 
 impl ObjectChange {
-    pub fn object_id(&self) -> ObjectId {
+    pub fn object_id(&self) -> Address {
         match self {
             ObjectChange::Published { package_id, .. } => *package_id,
             ObjectChange::Transferred { object_id, .. }
@@ -174,7 +174,7 @@ impl Display for ObjectChange {
             } => {
                 write!(
                     f,
-                    " ┌──\n │ ObjectId: {}\n │ Sender: {} \n │ Recipient: {:?}\n │ ObjectType: {} \n │ Version: {}\n │ Digest: {}\n └──",
+                    " ┌──\n │ Address: {}\n │ Sender: {} \n │ Recipient: {:?}\n │ ObjectType: {} \n │ Version: {}\n │ Digest: {}\n └──",
                     object_id, sender, recipient, object_type, version, digest
                 )
             }
@@ -189,7 +189,7 @@ impl Display for ObjectChange {
             } => {
                 write!(
                     f,
-                    " ┌──\n │ ObjectId: {}\n │ Sender: {} \n │ Owner: {:?}\n │ ObjectType: {} \n │ Version: {}\n │ Digest: {}\n └──",
+                    " ┌──\n │ Address: {}\n │ Sender: {} \n │ Owner: {:?}\n │ ObjectType: {} \n │ Version: {}\n │ Digest: {}\n └──",
                     object_id, sender, owner, object_type, version, digest
                 )
             }
@@ -201,7 +201,7 @@ impl Display for ObjectChange {
             } => {
                 write!(
                     f,
-                    " ┌──\n │ ObjectId: {}\n │ Sender: {} \n │ ObjectType: {} \n │ Version: {}\n └──",
+                    " ┌──\n │ Address: {}\n │ Sender: {} \n │ ObjectType: {} \n │ Version: {}\n └──",
                     object_id, sender, object_type, version
                 )
             }
@@ -213,7 +213,7 @@ impl Display for ObjectChange {
             } => {
                 write!(
                     f,
-                    " ┌──\n │ ObjectId: {}\n │ Sender: {} \n │ ObjectType: {} \n │ Version: {}\n └──",
+                    " ┌──\n │ Address: {}\n │ Sender: {} \n │ ObjectType: {} \n │ Version: {}\n └──",
                     object_id, sender, object_type, version
                 )
             }
@@ -227,7 +227,7 @@ impl Display for ObjectChange {
             } => {
                 write!(
                     f,
-                    " ┌──\n │ ObjectId: {}\n │ Sender: {} \n │ Owner: {:?}\n │ ObjectType: {} \n │ Version: {}\n │ Digest: {}\n └──",
+                    " ┌──\n │ Address: {}\n │ Sender: {} \n │ Owner: {:?}\n │ ObjectType: {} \n │ Version: {}\n │ Digest: {}\n └──",
                     object_id, sender, owner, object_type, version, digest
                 )
             }

@@ -1,4 +1,4 @@
-use af_sui_types::{Address, ObjectId, Version};
+use af_sui_types::{Address, Version};
 
 use super::Error;
 use super::fragments::PageInfoForward;
@@ -6,8 +6,8 @@ use crate::{GraphQlClient, Paged, PagedResponse, missing_data, schema};
 
 pub async fn query<C: GraphQlClient>(
     client: &C,
-    package_id: ObjectId,
-) -> Result<impl Iterator<Item = (ObjectId, u64)> + use<C>, Error<C::Error>> {
+    package_id: Address,
+) -> Result<impl Iterator<Item = (Address, u64)> + use<C>, Error<C::Error>> {
     let vars = Variables {
         address: package_id,
         first: None,
@@ -29,7 +29,7 @@ pub async fn query<C: GraphQlClient>(
 
 #[derive(cynic::QueryVariables, Clone, Debug)]
 pub struct Variables {
-    address: ObjectId,
+    address: Address,
     after: Option<String>,
     first: Option<i32>,
 }
