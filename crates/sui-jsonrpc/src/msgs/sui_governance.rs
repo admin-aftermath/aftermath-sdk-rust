@@ -1,10 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use af_sui_types::{Address as SuiAddress, EpochId};
 use serde::{Deserialize, Serialize};
 use serde_with::{IfIsHumanReadable, serde_as};
-use sui_sdk_types::Bls12381PublicKey;
+use sui_sdk_types::{Address, Bls12381PublicKey, EpochId};
 
 use super::SuiValidatorSummary;
 use crate::serde::BigInt;
@@ -121,7 +120,7 @@ pub struct SuiSystemStateSummary {
     /// The list of active validators in the current epoch.
     pub active_validators: Vec<SuiValidatorSummary>,
     /// ID of the object that contains the list of new validators that will join at the end of the epoch.
-    pub pending_active_validators_id: SuiAddress,
+    pub pending_active_validators_id: Address,
     /// Number of new validators that will join at the end of the epoch.
     #[serde_as(as = "IfIsHumanReadable<BigInt<u64>, _>")]
     pub pending_active_validators_size: u64,
@@ -130,25 +129,25 @@ pub struct SuiSystemStateSummary {
     #[serde_as(as = "Vec<IfIsHumanReadable<BigInt<u64>, _>>")]
     pub pending_removals: Vec<u64>,
     /// ID of the object that maps from staking pool's ID to the sui address of a validator.
-    pub staking_pool_mappings_id: SuiAddress,
+    pub staking_pool_mappings_id: Address,
     /// Number of staking pool mappings.
     #[serde_as(as = "IfIsHumanReadable<BigInt<u64>, _>")]
     pub staking_pool_mappings_size: u64,
     /// ID of the object that maps from a staking pool ID to the inactive validator that has that pool as its staking pool.
-    pub inactive_pools_id: SuiAddress,
+    pub inactive_pools_id: Address,
     /// Number of inactive staking pools.
     #[serde_as(as = "IfIsHumanReadable<BigInt<u64>, _>")]
     pub inactive_pools_size: u64,
     /// ID of the object that stores preactive validators, mapping their addresses to their `Validator` structs.
-    pub validator_candidates_id: SuiAddress,
+    pub validator_candidates_id: Address,
     /// Number of preactive validators.
     #[serde_as(as = "IfIsHumanReadable<BigInt<u64>, _>")]
     pub validator_candidates_size: u64,
     /// Map storing the number of epochs for which each validator has been below the low stake threshold.
     #[serde_as(as = "Vec<(_, IfIsHumanReadable<BigInt<u64>, _>)>")]
-    pub at_risk_validators: Vec<(SuiAddress, u64)>,
+    pub at_risk_validators: Vec<(Address, u64)>,
     /// A map storing the records of validator reporting each other.
-    pub validator_report_records: Vec<(SuiAddress, Vec<SuiAddress>)>,
+    pub validator_report_records: Vec<(Address, Vec<Address>)>,
 }
 
 /// RPC representation of the [Committee](https://mystenlabs.github.io/sui/sui_types/committee/struct.Committee.html)
@@ -167,9 +166,9 @@ pub struct SuiCommittee {
 #[serde(rename_all = "camelCase")]
 pub struct DelegatedStake {
     /// Validator's Address.
-    pub validator_address: SuiAddress,
+    pub validator_address: Address,
     /// Staking pool object id.
-    pub staking_pool: SuiAddress,
+    pub staking_pool: Address,
     pub stakes: Vec<Stake>,
 }
 
@@ -191,7 +190,7 @@ pub enum StakeStatus {
 #[serde(rename_all = "camelCase")]
 pub struct Stake {
     /// ID of the StakedSui receipt object.
-    pub staked_sui_id: SuiAddress,
+    pub staked_sui_id: Address,
     #[serde_as(as = "BigInt<u64>")]
     pub stake_request_epoch: EpochId,
     #[serde_as(as = "BigInt<u64>")]
@@ -213,6 +212,6 @@ pub struct ValidatorApys {
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ValidatorApy {
-    pub address: SuiAddress,
+    pub address: Address,
     pub apy: f64,
 }

@@ -1,14 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use af_sui_types::{Digest, EpochId, GasCostSummary};
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use sui_sdk_types::{
     CheckpointCommitment,
     CheckpointSequenceNumber,
     CheckpointTimestamp,
+    Digest,
     EndOfEpochData,
+    EpochId,
+    GasCostSummary,
 };
 
 use super::Page;

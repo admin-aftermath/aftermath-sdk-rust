@@ -5,21 +5,22 @@ use std::error::Error as StdError;
 use std::fmt::{self, Display, Formatter, Write};
 use std::str::FromStr;
 
-use af_sui_types::{
-    Address as SuiAddress,
-    Digest,
-    EpochId,
-    GasCostSummary,
-    ObjectRef,
-    SUI_FRAMEWORK_ADDRESS,
-    StructTag,
-    TypeTag,
-};
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 use serde_with::base64::Base64;
 use serde_with::{DeserializeAs, DisplayFromStr, IfIsHumanReadable, SerializeAs, serde_as};
-use sui_sdk_types::{ConsensusDeterminedVersionAssignments, MoveLocation, UserSignature, Version};
+use sui_sdk_types::{
+    Address,
+    ConsensusDeterminedVersionAssignments,
+    Digest,
+    EpochId,
+    GasCostSummary,
+    MoveLocation,
+    StructTag,
+    TypeTag,
+    UserSignature,
+    Version,
+};
 use tabled::builder::Builder as TableBuilder;
 use tabled::settings::style::HorizontalLine;
 use tabled::settings::{Panel as TablePanel, Style as TableStyle};
@@ -314,7 +315,7 @@ impl SuiTransactionBlockResponse {
         Ok(())
     }
 
-    pub fn published_package_id(&self) -> Result<SuiAddress, SuiTransactionBlockResponseError> {
+    pub fn published_package_id(&self) -> Result<Address, SuiTransactionBlockResponseError> {
         for change in self.get_object_changes()? {
             if let ObjectChange::Published { package_id, .. } = change {
                 return Ok(*package_id);
@@ -454,7 +455,7 @@ fn write_obj_changes<T: Display>(
 
 pub fn get_new_package_obj_from_response(
     response: &SuiTransactionBlockResponse,
-) -> Option<ObjectRef> {
+) -> Option<(Address, Version, Digest)> {
     response.object_changes.as_ref().and_then(|changes| {
         changes
             .iter()
@@ -465,7 +466,7 @@ pub fn get_new_package_obj_from_response(
 
 pub fn get_new_package_upgrade_cap_from_response(
     response: &SuiTransactionBlockResponse,
-) -> Option<ObjectRef> {
+) -> Option<(Address, Version, Digest)> {
     response.object_changes.as_ref().and_then(|changes| {
         changes
             .iter()
@@ -473,7 +474,7 @@ pub fn get_new_package_upgrade_cap_from_response(
                 matches!(change, ObjectChange::Created {
                     owner: Owner::AddressOwner(_),
                     object_type: StructTag {
-                        address: SUI_FRAMEWORK_ADDRESS,
+                        address: Address::TWO,
                         module,
                         name,
                         ..
@@ -640,7 +641,7 @@ pub trait SuiTransactionBlockEffectsAPI {
 
     /// Return an iterator of mutated objects, but excluding the gas object.
     fn mutated_excluding_gas(&self) -> Vec<OwnedObjectRef>;
-    fn modified_at_versions(&self) -> Vec<(SuiAddress, Version)>;
+    fn modified_at_versions(&self) -> Vec<(Address, Version)>;
     fn all_changed_objects(&self) -> Vec<(&OwnedObjectRef, WriteKind)>;
     fn all_deleted_objects(&self) -> Vec<(&SuiObjectRef, DeleteKind)>;
 }
@@ -675,7 +676,7 @@ pub enum DeleteKind {
     rename_all = "camelCase"
 )]
 pub struct SuiTransactionBlockEffectsModifiedAtVersions {
-    object_id: SuiAddress,
+    object_id: Address,
     #[serde_as(as = "BigInt<u64>")]
     sequence_number: Version,
 }
@@ -791,7 +792,7 @@ impl SuiTransactionBlockEffectsAPI for SuiTransactionBlockEffectsV1 {
             .collect()
     }
 
-    fn modified_at_versions(&self) -> Vec<(SuiAddress, Version)> {
+    fn modified_at_versions(&self) -> Vec<(Address, Version)> {
         self.modified_at_versions
             .iter()
             .map(|v| (v.object_id, v.sequence_number))
@@ -980,11 +981,11 @@ impl Display for SuiTransactionBlockEvents {
 #[serde(rename = "DevInspectArgs", rename_all = "camelCase")]
 pub struct DevInspectArgs {
     /// The sponsor of the gas for the transaction, might be different from the sender.
-    pub gas_sponsor: Option<SuiAddress>,
+    pub gas_sponsor: Option<Address>,
     /// The gas budget for the transaction.
     pub gas_budget: Option<BigInt<u64>>,
     /// The gas objects used to pay for the transaction.
-    pub gas_objects: Option<Vec<ObjectRef>>,
+    pub gas_objects: Option<Vec<(Address, Version, Digest)>>,
     /// Whether to skip transaction checks for the transaction.
     pub skip_checks: Option<bool>,
     /// Whether to return the raw transaction data and effects.
@@ -1067,7 +1068,7 @@ impl SuiExecutionStatus {
 
     /// If the error is a [`MoveAbort`], try extracting it.
     ///
-    /// [`MoveAbort`]: af_sui_types::ExecutionError::MoveAbort
+    /// [`MoveAbort`]: sui_sdk_types::ExecutionError::MoveAbort
     pub fn as_move_abort(&self) -> Option<(MoveLocation, u64)> {
         let Self::Failure { error } = self else {
             return None;
@@ -1096,7 +1097,7 @@ impl SuiExecutionStatus {
 #[serde(rename = "GasData", rename_all = "camelCase")]
 pub struct SuiGasData {
     pub payment: Vec<SuiObjectRef>,
-    pub owner: SuiAddress,
+    pub owner: Address,
     #[serde_as(as = "BigInt<u64>")]
     pub price: u64,
     #[serde_as(as = "BigInt<u64>")]
@@ -1130,7 +1131,7 @@ pub enum SuiTransactionBlockData {
 #[enum_dispatch]
 pub trait SuiTransactionBlockDataAPI {
     fn transaction(&self) -> &SuiTransactionBlockKind;
-    fn sender(&self) -> &SuiAddress;
+    fn sender(&self) -> &Address;
     fn gas_data(&self) -> &SuiGasData;
 }
 
@@ -1138,7 +1139,7 @@ pub trait SuiTransactionBlockDataAPI {
 #[serde(rename = "TransactionBlockDataV1", rename_all = "camelCase")]
 pub struct SuiTransactionBlockDataV1 {
     pub transaction: SuiTransactionBlockKind,
-    pub sender: SuiAddress,
+    pub sender: Address,
     pub gas_data: SuiGasData,
 }
 
@@ -1146,7 +1147,7 @@ impl SuiTransactionBlockDataAPI for SuiTransactionBlockDataV1 {
     fn transaction(&self) -> &SuiTransactionBlockKind {
         &self.transaction
     }
-    fn sender(&self) -> &SuiAddress {
+    fn sender(&self) -> &Address {
         &self.sender
     }
     fn gas_data(&self) -> &SuiGasData {
@@ -1237,7 +1238,7 @@ impl Display for SuiTransactionBlock {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SuiGenesisTransaction {
-    pub objects: Vec<SuiAddress>,
+    pub objects: Vec<Address>,
 }
 
 #[serde_as]
@@ -1357,12 +1358,12 @@ pub struct SuiJWK {
 #[serde(rename = "InputObjectKind")]
 pub enum SuiInputObjectKind {
     // A Move package, must be immutable.
-    MovePackage(SuiAddress),
+    MovePackage(Address),
     // A Move object, either immutable, or owned mutable.
     ImmOrOwnedMoveObject(SuiObjectRef),
     // A Move object that's shared and mutable.
     SharedMoveObject {
-        id: SuiAddress,
+        id: Address,
         #[serde_as(as = "BigInt<u64>")]
         initial_shared_version: Version,
         #[serde(default)]
@@ -1413,9 +1414,9 @@ pub enum SuiCommand {
     MergeCoins(SuiArgument, Vec<SuiArgument>),
     /// Publishes a Move package. It takes the package bytes and a list of the package's transitive
     /// dependencies to link against on-chain.
-    Publish(Vec<SuiAddress>),
+    Publish(Vec<Address>),
     /// Upgrades a Move package
-    Upgrade(Vec<SuiAddress>, SuiAddress, SuiArgument),
+    Upgrade(Vec<Address>, Address, SuiArgument),
     /// `forall T: Vec<T> -> vector<T>`
     /// Given n-values of the same type, it constructs a vector. For non objects or an empty vector,
     /// the type tag must be specified.
@@ -1501,7 +1502,7 @@ impl Display for SuiArgument {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SuiProgrammableMoveCall {
     /// The package containing the module and function.
-    pub package: SuiAddress,
+    pub package: Address,
     /// The specific module in the package containing the function.
     pub module: String,
     /// The function to be called.
@@ -1583,14 +1584,14 @@ pub enum RPCTransactionRequestParams {
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransferObjectParams {
-    pub recipient: SuiAddress,
-    pub object_id: SuiAddress,
+    pub recipient: Address,
+    pub object_id: Address,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MoveCallParams {
-    pub package_object_id: SuiAddress,
+    pub package_object_id: Address,
     pub module: String,
     pub function: String,
     #[serde(default)]
@@ -1618,7 +1619,7 @@ pub struct OwnedObjectRef {
 }
 
 impl OwnedObjectRef {
-    pub fn object_id(&self) -> SuiAddress {
+    pub fn object_id(&self) -> Address {
         self.reference.object_id
     }
     pub fn version(&self) -> Version {
@@ -1643,7 +1644,7 @@ impl SuiCallArg {
         }
     }
 
-    pub fn object(&self) -> Option<&SuiAddress> {
+    pub fn object(&self) -> Option<&Address> {
         match self {
             SuiCallArg::Object(SuiObjectArg::SharedObject { object_id, .. })
             | SuiCallArg::Object(SuiObjectArg::ImmOrOwnedObject { object_id, .. })
@@ -1680,7 +1681,7 @@ pub enum SuiObjectArg {
     // A Move object, either immutable, or owned mutable.
     #[serde(rename_all = "camelCase")]
     ImmOrOwnedObject {
-        object_id: SuiAddress,
+        object_id: Address,
         #[serde_as(as = "BigInt<u64>")]
         version: Version,
         digest: Digest,
@@ -1689,7 +1690,7 @@ pub enum SuiObjectArg {
     // SharedObject::mutable controls whether caller asks for a mutable reference to shared object.
     #[serde(rename_all = "camelCase")]
     SharedObject {
-        object_id: SuiAddress,
+        object_id: Address,
         #[serde_as(as = "BigInt<u64>")]
         initial_shared_version: Version,
         mutable: bool,
@@ -1697,7 +1698,7 @@ pub enum SuiObjectArg {
     // A reference to a Move object that's going to be received in the transaction.
     #[serde(rename_all = "camelCase")]
     Receiving {
-        object_id: SuiAddress,
+        object_id: Address,
         #[serde_as(as = "BigInt<u64>")]
         version: Version,
         digest: Digest,
@@ -1712,24 +1713,24 @@ pub enum TransactionFilter {
     Checkpoint(#[serde_as(as = "IfIsHumanReadable<BigInt<u64>, _>")] Version),
     /// Query by move function.
     MoveFunction {
-        package: SuiAddress,
+        package: Address,
         module: Option<String>,
         function: Option<String>,
     },
     /// Query by input object.
-    InputObject(SuiAddress),
+    InputObject(Address),
     /// Query by changed object, including created, mutated and unwrapped objects.
-    ChangedObject(SuiAddress),
+    ChangedObject(Address),
     /// Query for transactions that touch this object.
-    AffectedObject(SuiAddress),
+    AffectedObject(Address),
     /// Query by sender address.
-    FromAddress(SuiAddress),
+    FromAddress(Address),
     /// Query by recipient address.
-    ToAddress(SuiAddress),
+    ToAddress(Address),
     /// Query by sender and recipient address.
-    FromAndToAddress { from: SuiAddress, to: SuiAddress },
+    FromAndToAddress { from: Address, to: Address },
     /// CURRENTLY NOT SUPPORTED. Query txs that have a given address as sender or recipient.
-    FromOrToAddress { addr: SuiAddress },
+    FromOrToAddress { addr: Address },
     /// Query by transaction kind
     TransactionKind(String),
     /// Query transactions of any given kind in the input.
@@ -1738,9 +1739,9 @@ pub enum TransactionFilter {
 
 #[cfg(test)]
 mod tests {
-    use af_sui_types::IdentStr;
     use color_eyre::Result;
     use itertools::Itertools as _;
+    use sui_sdk_types::Identifier;
 
     use super::*;
 
@@ -1763,7 +1764,7 @@ mod tests {
                 MoveLocation {
                     package: "0xfd6f306bb2f8dce24dd3d4a9bdc51a46e7c932b15007d73ac0cfb38c15de0fea"
                         .parse()?,
-                    module: IdentStr::cast("market").to_owned(),
+                    module: Identifier::from_static("market"),
                     function: 1,
                     instruction: 60,
                     function_name: Some("try_update_funding".parse()?),
@@ -1774,7 +1775,7 @@ mod tests {
                 MoveLocation {
                     package: "0x241537381737a40df6838bc395fb64f04ff604513c18a2ac3308ac810c805fa6"
                         .parse()?,
-                    module: IdentStr::cast("oracle").to_owned(),
+                    module: Identifier::from_static("oracle"),
                     function: 23,
                     instruction: 42,
                     function_name: Some("update_price_feed_inner".parse()?),
@@ -1785,7 +1786,7 @@ mod tests {
                 MoveLocation {
                     package: "0x72a8715095cdc8442b4316f78802d7aefa2e6f0c3c6fac256ce81554034b0d4b"
                         .parse()?,
-                    module: IdentStr::cast("clearing_house").to_owned(),
+                    module: Identifier::from_static("clearing_house"),
                     function: 53,
                     instruction: 32,
                     function_name: Some("settled_liquidated_position".parse()?),

@@ -1,9 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use af_sui_types::{Address, Digest};
 use jsonrpsee::proc_macros::rpc;
-use sui_sdk_types::Version;
+use sui_sdk_types::{Address, Digest, Version};
 
 use crate::msgs::{
     Checkpoint,

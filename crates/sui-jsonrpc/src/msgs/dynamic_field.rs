@@ -1,26 +1,19 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-use std::borrow::Borrow;
 use std::fmt::Display;
 
-use af_sui_types::{
-    Address,
-    DYNAMIC_FIELD_FIELD_STRUCT_NAME,
-    DYNAMIC_FIELD_MODULE_NAME,
-    DYNAMIC_OBJECT_FIELD_MODULE_NAME,
-    DYNAMIC_OBJECT_FIELD_WRAPPER_STRUCT_NAME,
-    Digest,
-    IdentStr,
-    SUI_FRAMEWORK_ADDRESS,
-    StructTag,
-    TypeTag,
-};
 use serde::{Deserialize, Serialize};
 use serde_with::{DisplayFromStr, IfIsHumanReadable, serde_as};
-use sui_sdk_types::Version;
+use sui_sdk_types::{Address, Digest, Identifier, StructTag, TypeTag, Version};
 
 use super::Page;
 use crate::serde::Base64orBase58;
+
+const DYNAMIC_FIELD_MODULE_NAME: &str = "dynamic_field";
+const DYNAMIC_FIELD_FIELD_STRUCT_NAME: &str = "Field";
+
+const DYNAMIC_OBJECT_FIELD_MODULE_NAME: &str = "dynamic_object_field";
+const DYNAMIC_OBJECT_FIELD_WRAPPER_STRUCT_NAME: &str = "Wrapper";
 
 pub type DynamicFieldPage = Page<DynamicFieldInfo, Address>;
 
@@ -58,31 +51,31 @@ pub struct DynamicFieldInfo {
 
 impl DynamicFieldInfo {
     pub fn is_dynamic_field(tag: &StructTag) -> bool {
-        tag.address == SUI_FRAMEWORK_ADDRESS
-            && Borrow::<IdentStr>::borrow(&tag.module) == DYNAMIC_FIELD_MODULE_NAME
-            && Borrow::<IdentStr>::borrow(&tag.name) == DYNAMIC_FIELD_FIELD_STRUCT_NAME
+        tag.address == Address::TWO
+            && tag.module.as_str() == DYNAMIC_FIELD_MODULE_NAME
+            && tag.name.as_str() == DYNAMIC_FIELD_FIELD_STRUCT_NAME
     }
 
     pub fn is_dynamic_object_field_wrapper(tag: &StructTag) -> bool {
-        tag.address == SUI_FRAMEWORK_ADDRESS
-            && Borrow::<IdentStr>::borrow(&tag.module) == DYNAMIC_OBJECT_FIELD_MODULE_NAME
-            && Borrow::<IdentStr>::borrow(&tag.name) == DYNAMIC_OBJECT_FIELD_WRAPPER_STRUCT_NAME
+        tag.address == Address::TWO
+            && tag.module.as_str() == DYNAMIC_OBJECT_FIELD_MODULE_NAME
+            && tag.name.as_str() == DYNAMIC_OBJECT_FIELD_WRAPPER_STRUCT_NAME
     }
 
     pub fn dynamic_field_type(key: TypeTag, value: TypeTag) -> StructTag {
         StructTag {
-            address: SUI_FRAMEWORK_ADDRESS,
-            name: DYNAMIC_FIELD_FIELD_STRUCT_NAME.to_owned(),
-            module: DYNAMIC_FIELD_MODULE_NAME.to_owned(),
+            address: Address::TWO,
+            name: Identifier::from_static(DYNAMIC_FIELD_FIELD_STRUCT_NAME),
+            module: Identifier::from_static(DYNAMIC_FIELD_MODULE_NAME),
             type_params: vec![key, value],
         }
     }
 
     pub fn dynamic_object_field_wrapper(key: TypeTag) -> StructTag {
         StructTag {
-            address: SUI_FRAMEWORK_ADDRESS,
-            module: DYNAMIC_OBJECT_FIELD_MODULE_NAME.to_owned(),
-            name: DYNAMIC_OBJECT_FIELD_WRAPPER_STRUCT_NAME.to_owned(),
+            address: Address::TWO,
+            module: Identifier::from_static(DYNAMIC_OBJECT_FIELD_MODULE_NAME),
+            name: Identifier::from_static(DYNAMIC_OBJECT_FIELD_WRAPPER_STRUCT_NAME),
             type_params: vec![key],
         }
     }

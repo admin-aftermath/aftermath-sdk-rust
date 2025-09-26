@@ -4,22 +4,15 @@
 use std::fmt;
 use std::fmt::Display;
 
-use af_sui_types::{
-    Address as SuiAddress,
-    Address,
-    Digest,
-    Identifier,
-    StructTag,
-    encode_base64_default,
-};
 use json_to_table::json_to_table;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use serde_with::{DisplayFromStr, IfIsHumanReadable, serde_as};
+use sui_sdk_types::{Address, Digest, Identifier, StructTag};
 use tabled::settings::Style as TableStyle;
 
 use super::Page;
-use crate::serde::{Base64orBase58, BigInt};
+use crate::serde::{Base64orBase58, BigInt, encode_base64_default};
 
 pub type EventPage = Page<SuiEvent, EventID>;
 
@@ -39,7 +32,7 @@ pub struct SuiEvent {
     #[serde_as(as = "DisplayFromStr")]
     pub transaction_module: Identifier,
     /// Sender's Sui address.
-    pub sender: SuiAddress,
+    pub sender: Address,
     /// Move event type.
     // #[serde_as(as = "SuiStructTag")]
     #[serde_as(as = "DisplayFromStr")]
@@ -130,7 +123,7 @@ pub enum EventFilter {
     /// Return all events.
     All([Box<EventFilter>; 0]),
     /// Query by sender address.
-    Sender(SuiAddress),
+    Sender(Address),
     /// Return events emitted by the given transaction.
     Transaction(
         ///digest of the transaction, as base-64 encoded string

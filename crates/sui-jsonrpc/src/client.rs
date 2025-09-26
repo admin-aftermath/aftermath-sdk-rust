@@ -5,26 +5,26 @@ use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use std::time::Duration;
 
-use af_sui_types::{
-    Address as SuiAddress,
-    GasCostSummary,
-    GasData,
-    Object,
-    ObjectArg,
-    ObjectRef,
-    TransactionData,
-    TransactionDataV1,
-    TransactionExpiration,
-    TransactionKind,
-    UserSignature,
-    encode_base64_default,
-};
 use futures_core::Stream;
 use jsonrpsee::core::client::ClientT;
 use jsonrpsee::rpc_params;
 use jsonrpsee::ws_client::{PingConfig, WsClient, WsClientBuilder};
 use jsonrpsee_http_client::{HeaderMap, HeaderValue, HttpClient, HttpClientBuilder};
 use serde_json::Value;
+use sui_sdk_types::{
+    Address,
+    Digest,
+    GasCostSummary,
+    GasPayment,
+    Input,
+    Object,
+    ObjectReference,
+    Transaction,
+    TransactionExpiration,
+    TransactionKind,
+    UserSignature,
+    Version,
+};
 
 use super::{CLIENT_SDK_TYPE_HEADER, CLIENT_SDK_VERSION_HEADER, CLIENT_TARGET_API_VERSION_HEADER};
 use crate::api::{CoinReadApiClient, ReadApiClient as _, WriteApiClient as _};
@@ -43,6 +43,7 @@ use crate::msgs::{
     SuiTransactionBlockResponse,
     SuiTransactionBlockResponseOptions,
 };
+use crate::serde::encode_base64_default;
 
 /// Maximum possible budget.
 pub const MAX_GAS_BUDGET: u64 = 50000000000;
@@ -78,7 +79,7 @@ pub enum SuiClientError {
         "Insufficient funds for address [{address}]; found balance {found}, requested: {requested}"
     )]
     InsufficientFunds {
-        address: SuiAddress,
+        address: Address,
         found: u64,
         requested: u64,
     },
@@ -393,11 +394,7 @@ impl SuiClient {
         (*self.ws).as_ref()
     }
 
-    pub async fn get_shared_oarg(
-        &self,
-        id: SuiAddress,
-        mutable: bool,
-    ) -> SuiClientResult<ObjectArg> {
+    pub async fn get_shared_oarg(&self, id: Address, mutable: bool) -> SuiClientResult<Input> {
         let data = self
             .http()
             .get_object(id, Some(SuiObjectDataOptions::new().with_owner()))
@@ -406,7 +403,7 @@ impl SuiClient {
         Ok(data.shared_object_arg(mutable)?)
     }
 
-    pub async fn get_imm_or_owned_oarg(&self, id: SuiAddress) -> SuiClientResult<ObjectArg> {
+    pub async fn get_imm_or_owned_oarg(&self, id: Address) -> SuiClientResult<Input> {
         let data = self
             .http()
             .get_object(id, Some(SuiObjectDataOptions::new().with_owner()))
@@ -424,9 +421,9 @@ impl SuiClient {
     pub async fn object_args<Iter>(
         &self,
         ids: Iter,
-    ) -> Result<impl Iterator<Item = Result<ObjectArg, BoxError>> + use<Iter>, BoxError>
+    ) -> Result<impl Iterator<Item = Result<Input, BoxError>> + use<Iter>, BoxError>
     where
-        Iter: IntoIterator<Item = SuiAddress> + Send,
+        Iter: IntoIterator<Item = Address> + Send,
         Iter::IntoIter: Send,
     {
         let options = SuiObjectDataOptions::new().with_owner();
@@ -438,7 +435,7 @@ impl SuiClient {
     }
 
     /// Query the full object contents as a standard Sui type.
-    pub async fn full_object(&self, id: SuiAddress) -> Result<Object, BoxError> {
+    pub async fn full_object(&self, id: Address) -> Result<Object, BoxError> {
         let options = SuiObjectDataOptions {
             show_bcs: true,
             show_owner: true,
@@ -463,7 +460,7 @@ impl SuiClient {
         ids: Iter,
     ) -> Result<impl Iterator<Item = Result<Object, BoxError>>, BoxError>
     where
-        Iter: IntoIterator<Item = SuiAddress> + Send,
+        Iter: IntoIterator<Item = Address> + Send,
         Iter::IntoIter: Send,
     {
         let options = SuiObjectDataOptions {
@@ -489,7 +486,7 @@ impl SuiClient {
         options: SuiObjectDataOptions,
     ) -> SuiClientResult<Vec<SuiObjectResponse>>
     where
-        I: IntoIterator<Item = SuiAddress> + Send,
+        I: IntoIterator<Item = Address> + Send,
         I::IntoIter: Send,
     {
         let mut result = Vec::new();
@@ -520,13 +517,15 @@ impl SuiClient {
     /// [`ErrorObjectExt`]: crate::error::ErrorObjectExt
     pub async fn submit_transaction(
         &self,
-        tx_data: &TransactionData,
+        tx_data: &Transaction,
         signatures: &[UserSignature],
         options: Option<SuiTransactionBlockResponseOptions>,
     ) -> Result<SuiTransactionBlockResponse, JsonRpcClientError> {
+        let tx_bytes =
+            encode_base64_default(bcs::to_bytes(tx_data).expect("Transaction is BCS-compatible"));
         self.http()
             .execute_transaction_block(
-                tx_data.encode_base64(),
+                tx_bytes,
                 signatures.iter().map(UserSignature::to_base64).collect(),
                 options,
                 None,
@@ -541,23 +540,24 @@ impl SuiClient {
     pub async fn dry_run_transaction(
         &self,
         tx_kind: &TransactionKind,
-        sender: SuiAddress,
+        sender: Address,
         gas_price: u64,
     ) -> Result<DryRunTransactionBlockResponse, JsonRpcClientError> {
-        let sentinel = TransactionData::V1(TransactionDataV1 {
+        let tx_data = Transaction {
             kind: tx_kind.clone(),
             sender,
-            gas_data: GasData {
-                payment: vec![],
+            gas_payment: GasPayment {
+                objects: vec![],
                 owner: sender,
                 price: gas_price,
                 budget: MAX_GAS_BUDGET,
             },
             expiration: TransactionExpiration::None,
-        });
-        self.http()
-            .dry_run_transaction_block(sentinel.encode_base64())
-            .await
+        };
+        let tx_bytes = encode_base64_default(
+            bcs::to_bytes(&tx_data).expect("Transaction serialization shouldn't fail"),
+        );
+        self.http().dry_run_transaction_block(tx_bytes).await
     }
 
     /// Estimate a budget for the transaction by dry-running it.
@@ -566,7 +566,7 @@ impl SuiClient {
     pub async fn gas_budget(
         &self,
         tx_kind: &TransactionKind,
-        sender: SuiAddress,
+        sender: Address,
         price: u64,
     ) -> Result<u64, DryRunError> {
         let options = GasBudgetOptions::new(price);
@@ -577,26 +577,24 @@ impl SuiClient {
     pub async fn gas_budget_with_options(
         &self,
         tx_kind: &TransactionKind,
-        sender: SuiAddress,
+        sender: Address,
         options: GasBudgetOptions,
     ) -> Result<u64, DryRunError> {
-        let sentinel = TransactionData::V1(TransactionDataV1 {
+        let tx_data = Transaction {
             kind: tx_kind.clone(),
             sender,
-            gas_data: GasData {
-                payment: vec![],
+            gas_payment: GasPayment {
+                objects: vec![],
                 owner: sender,
                 price: options.price,
                 budget: options.dry_run_budget,
             },
             expiration: TransactionExpiration::None,
-        });
-        let response = self
-            .http()
-            .dry_run_transaction_block(encode_base64_default(
-                bcs::to_bytes(&sentinel).expect("TransactionData serialization shouldn't fail"),
-            ))
-            .await?;
+        };
+        let tx_bytes = encode_base64_default(
+            bcs::to_bytes(&tx_data).expect("Transaction serialization shouldn't fail"),
+        );
+        let response = self.http().dry_run_transaction_block(tx_bytes).await?;
         if let SuiExecutionStatus::Failure { error } = response.effects.status() {
             return Err(DryRunError::Execution(error.clone(), response));
         }
@@ -612,10 +610,10 @@ impl SuiClient {
     pub async fn get_gas_data(
         &self,
         tx_kind: &TransactionKind,
-        sponsor: SuiAddress,
+        sponsor: Address,
         budget: u64,
         price: u64,
-    ) -> Result<GasData, GetGasDataError> {
+    ) -> Result<GasPayment, GetGasDataError> {
         let exclude = if let TransactionKind::ProgrammableTransaction(ptb) = tx_kind {
             use sui_sdk_types::Input::*;
 
@@ -636,13 +634,18 @@ impl SuiClient {
             return Err(GetGasDataError::BudgetTooSmall { budget, price });
         }
 
-        let payment = self
+        let objects = self
             .get_gas_payment(sponsor, budget, &exclude)
             .await
             .map_err(GetGasDataError::from_not_enough_gas)?;
 
-        Ok(GasData {
-            payment,
+        Ok(GasPayment {
+            objects: objects
+                .into_iter()
+                .map(|(object_id, version, digest)| {
+                    ObjectReference::new(object_id, version, digest)
+                })
+                .collect(),
             owner: sponsor,
             price,
             budget,
@@ -654,10 +657,10 @@ impl SuiClient {
     /// `exclude`s certain object ids from being part of the returned objects.
     pub async fn get_gas_payment(
         &self,
-        sponsor: SuiAddress,
+        sponsor: Address,
         budget: u64,
-        exclude: &[SuiAddress],
-    ) -> Result<Vec<ObjectRef>, NotEnoughGasError> {
+        exclude: &[Address],
+    ) -> Result<Vec<(Address, Version, Digest)>, NotEnoughGasError> {
         Ok(self
             .coins_for_amount(sponsor, Some("0x2::sui::SUI".to_owned()), budget, exclude)
             .await
@@ -674,10 +677,10 @@ impl SuiClient {
     #[deprecated(since = "0.14.5", note = "use SuiClient::coins_for_amount")]
     pub async fn select_coins(
         &self,
-        address: SuiAddress,
+        address: Address,
         coin_type: Option<String>,
         amount: u64,
-        exclude: Vec<SuiAddress>,
+        exclude: Vec<Address>,
     ) -> SuiClientResult<Vec<Coin>> {
         self.coins_for_amount(address, coin_type, amount, &exclude)
             .await
@@ -695,7 +698,7 @@ impl SuiClient {
     ///
     /// ```rust,no_run
     /// use sui_jsonrpc::client::SuiClientBuilder;
-    /// use af_sui_types::Address as SuiAddress;
+    /// use sui_sdk_types::Address;
     ///
     /// #[tokio::main]
     /// async fn main() -> color_eyre::Result<()> {
@@ -709,10 +712,10 @@ impl SuiClient {
     /// ```
     pub async fn coins_for_amount(
         &self,
-        address: SuiAddress,
+        address: Address,
         coin_type: Option<String>,
         amount: u64,
-        exclude: &[SuiAddress],
+        exclude: &[Address],
     ) -> SuiClientResult<Vec<Coin>> {
         use futures_util::{TryStreamExt as _, future};
         let mut coins = vec![];
@@ -749,7 +752,7 @@ impl SuiClient {
     ///
     /// ```rust,no_run
     /// use sui_jsonrpc::client::SuiClientBuilder;
-    /// use af_sui_types::Address as SuiAddress;
+    /// use sui_sdk_types::Address;
     /// use futures::TryStreamExt as _;
     ///
     /// #[tokio::main]
@@ -766,7 +769,7 @@ impl SuiClient {
     /// ```
     pub fn coins_for_address(
         &self,
-        address: SuiAddress,
+        address: Address,
         coin_type: Option<String>,
         page_size: Option<u32>,
     ) -> impl Stream<Item = SuiClientResult<Coin>> + Send + '_ {
@@ -797,7 +800,7 @@ impl SuiClient {
     /// size.
     pub fn owned_objects(
         &self,
-        owner: SuiAddress,
+        owner: Address,
         query: Option<SuiObjectResponseQuery>,
         page_size: Option<u32>,
     ) -> impl Stream<Item = SuiClientResult<SuiObjectData>> + Send + '_ {
@@ -821,7 +824,10 @@ impl SuiClient {
     }
 
     /// Get the latest object reference for an ID from the node.
-    pub async fn latest_object_ref(&self, object_id: SuiAddress) -> SuiClientResult<ObjectRef> {
+    pub async fn latest_object_ref(
+        &self,
+        object_id: Address,
+    ) -> SuiClientResult<(Address, Version, Digest)> {
         Ok(self
             .http()
             .get_object(object_id, Some(SuiObjectDataOptions::default()))
@@ -887,7 +893,7 @@ pub enum GetGasDataError {
         Caused by {inner}"
     )]
     NotEnoughGas {
-        sponsor: SuiAddress,
+        sponsor: Address,
         budget: u64,
         inner: SuiClientError,
     },
@@ -915,7 +921,7 @@ impl GetGasDataError {
         Caused by {inner}"
 )]
 pub struct NotEnoughGasError {
-    sponsor: SuiAddress,
+    sponsor: Address,
     budget: u64,
     inner: SuiClientError,
 }

@@ -3,21 +3,18 @@
 
 use std::fmt::Display;
 
-use af_sui_types::{
-    Address as SuiAddress,
-    Address,
-    Digest,
-    OBJECT_DIGEST_DELETED,
-    OBJECT_DIGEST_WRAPPED,
-    ObjectRef,
-    StructTag,
-};
 use serde::{Deserialize, Serialize};
 use serde_with::{DisplayFromStr, serde_as};
-use sui_sdk_types::Version;
+use sui_sdk_types::{Address, Digest, StructTag, Version};
 
 use crate::msgs::Owner;
 use crate::serde::BigInt;
+
+/// A marker that signifies the object is deleted.
+const OBJECT_DIGEST_DELETED: Digest = Digest::new([99; 32]);
+
+/// A marker that signifies the object is wrapped into another object.
+const OBJECT_DIGEST_WRAPPED: Digest = Digest::new([88; 32]);
 
 /// ObjectChange are derived from the object mutations in the TransactionEffect to provide richer object information.
 #[serde_as]
@@ -36,7 +33,7 @@ pub enum ObjectChange {
     /// Transfer objects to new address / wrap in another object
     #[serde(rename_all = "camelCase")]
     Transferred {
-        sender: SuiAddress,
+        sender: Address,
         recipient: Owner,
         // #[serde_as(as = "SuiStructTag")]
         #[serde_as(as = "DisplayFromStr")]
@@ -49,7 +46,7 @@ pub enum ObjectChange {
     /// Object mutated.
     #[serde(rename_all = "camelCase")]
     Mutated {
-        sender: SuiAddress,
+        sender: Address,
         owner: Owner,
         // #[serde_as(as = "SuiStructTag")]
         #[serde_as(as = "DisplayFromStr")]
@@ -64,7 +61,7 @@ pub enum ObjectChange {
     /// Delete object
     #[serde(rename_all = "camelCase")]
     Deleted {
-        sender: SuiAddress,
+        sender: Address,
         // #[serde_as(as = "SuiStructTag")]
         #[serde_as(as = "DisplayFromStr")]
         object_type: StructTag,
@@ -75,7 +72,7 @@ pub enum ObjectChange {
     /// Wrapped object
     #[serde(rename_all = "camelCase")]
     Wrapped {
-        sender: SuiAddress,
+        sender: Address,
         // #[serde_as(as = "SuiStructTag")]
         #[serde_as(as = "DisplayFromStr")]
         object_type: StructTag,
@@ -86,7 +83,7 @@ pub enum ObjectChange {
     /// New object creation
     #[serde(rename_all = "camelCase")]
     Created {
-        sender: SuiAddress,
+        sender: Address,
         owner: Owner,
         // #[serde_as(as = "SuiStructTag")]
         #[serde_as(as = "DisplayFromStr")]
@@ -110,7 +107,7 @@ impl ObjectChange {
         }
     }
 
-    pub fn object_ref(&self) -> ObjectRef {
+    pub fn object_ref(&self) -> (Address, Version, Digest) {
         match self {
             ObjectChange::Published {
                 package_id,

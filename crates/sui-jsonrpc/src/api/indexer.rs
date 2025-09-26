@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use af_sui_types::{Address as SuiAddress, Digest};
 use jsonrpsee::proc_macros::rpc;
+use sui_sdk_types::{Address, Digest};
 
 use crate::msgs::{
     DynamicFieldName,
@@ -31,9 +31,9 @@ pub trait IndexerApi {
     #[method(name = "getOwnedObjects")]
     async fn get_owned_objects(
         &self,
-        address: SuiAddress,
+        address: Address,
         query: Option<SuiObjectResponseQuery>,
-        cursor: Option<SuiAddress>,
+        cursor: Option<Address>,
         limit: Option<usize>,
     ) -> RpcResult<ObjectsPage>;
 
@@ -69,8 +69,8 @@ pub trait IndexerApi {
     #[method(name = "getDynamicFields")]
     async fn get_dynamic_fields(
         &self,
-        parent_object_id: SuiAddress,
-        cursor: Option<SuiAddress>,
+        parent_object_id: Address,
+        cursor: Option<Address>,
         limit: Option<usize>,
     ) -> RpcResult<DynamicFieldPage>;
 
@@ -78,21 +78,21 @@ pub trait IndexerApi {
     #[method(name = "getDynamicFieldObject")]
     async fn get_dynamic_field_object(
         &self,
-        parent_object_id: SuiAddress,
+        parent_object_id: Address,
         name: DynamicFieldName,
     ) -> RpcResult<SuiObjectResponse>;
 
     /// Return the resolved address given resolver and name
     #[method(name = "resolveNameServiceAddress")]
-    async fn resolve_name_service_address(&self, name: String) -> RpcResult<Option<SuiAddress>>;
+    async fn resolve_name_service_address(&self, name: String) -> RpcResult<Option<Address>>;
 
     /// Return the resolved names given address,
     /// if multiple names are resolved, the first one is the primary name.
     #[method(name = "resolveNameServiceNames")]
     async fn resolve_name_service_names(
         &self,
-        address: SuiAddress,
-        cursor: Option<SuiAddress>,
+        address: Address,
+        cursor: Option<Address>,
         limit: Option<usize>,
-    ) -> RpcResult<Page<String, SuiAddress>>;
+    ) -> RpcResult<Page<String, Address>>;
 }

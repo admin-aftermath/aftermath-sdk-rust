@@ -3,8 +3,8 @@
 
 use std::collections::BTreeMap;
 
-use af_sui_types::Address;
 use jsonrpsee::proc_macros::rpc;
+use sui_sdk_types::Address;
 
 use crate::msgs::{
     MoveFunctionArgType,

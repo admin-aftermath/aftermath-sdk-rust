@@ -1,11 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use af_sui_types::{Address as SuiAddress, Address, CheckpointSequenceNumber, Identifier};
 use serde::{Deserialize, Serialize};
 use serde_with::base64::Base64;
 use serde_with::{DisplayFromStr, IfIsHumanReadable, serde_as};
-use sui_sdk_types::EpochId;
+use sui_sdk_types::{Address, CheckpointSequenceNumber, EpochId, Identifier};
 
 use super::Page;
 use crate::serde::BigInt;
@@ -42,7 +41,7 @@ pub struct EpochInfo {
 #[serde(rename_all = "camelCase")]
 pub struct SuiValidatorSummary {
     // Metadata
-    pub sui_address: SuiAddress,
+    pub sui_address: Address,
     #[serde_as(as = "Base64")]
     pub protocol_pubkey_bytes: Vec<u8>,
     #[serde_as(as = "Base64")]

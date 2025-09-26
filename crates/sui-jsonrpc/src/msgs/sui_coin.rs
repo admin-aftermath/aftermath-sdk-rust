@@ -3,10 +3,9 @@
 
 use std::collections::HashMap;
 
-use af_sui_types::{Address, Digest, EpochId, ObjectRef};
 use serde::{Deserialize, Serialize};
 use serde_with::{IfIsHumanReadable, serde_as};
-use sui_sdk_types::Version;
+use sui_sdk_types::{Address, Digest, EpochId, Version};
 
 use super::Page;
 use crate::serde::BigInt;
@@ -51,7 +50,7 @@ pub struct Coin {
 }
 
 impl Coin {
-    pub fn object_ref(&self) -> ObjectRef {
+    pub fn object_ref(&self) -> (Address, Version, Digest) {
         (self.coin_object_id, self.version, self.digest)
     }
 }
