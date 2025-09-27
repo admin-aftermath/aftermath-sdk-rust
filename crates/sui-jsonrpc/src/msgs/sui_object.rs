@@ -508,7 +508,7 @@ impl From<Owner> for sui_sdk_types::Owner {
     fn from(value: Owner) -> sui_sdk_types::Owner {
         match value {
             Owner::AddressOwner(a) => sui_sdk_types::Owner::Address(a),
-            Owner::ObjectOwner(o) => sui_sdk_types::Owner::Object(o.into()),
+            Owner::ObjectOwner(o) => sui_sdk_types::Owner::Object(o),
             Owner::Shared {
                 initial_shared_version,
             } => sui_sdk_types::Owner::Shared(initial_shared_version),
@@ -860,6 +860,7 @@ impl SuiData for SuiRawData {
     }
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq)]
 #[serde(tag = "dataType", rename_all = "camelCase", rename = "Data")]
 pub enum SuiParsedData {

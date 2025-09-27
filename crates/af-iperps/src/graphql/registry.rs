@@ -20,7 +20,7 @@ where
         let mut cursor = None;
         while has_next_page {
             let (dfs, cursor_) = client
-                .owner_df_contents(registry_address.into(), version, None, cursor)
+                .owner_df_contents(registry_address, version, None, cursor)
                 .await?;
             cursor = cursor_;
             has_next_page = cursor.is_some();

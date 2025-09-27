@@ -24,7 +24,7 @@ pub async fn query<C: GraphQlClient>(
         .nodes
         .into_iter()
         .chain(pages.into_iter().flat_map(|p| p.package_versions.nodes))
-        .map(|o| (o.address.into(), o.version)))
+        .map(|o| (o.address, o.version)))
 }
 
 #[derive(cynic::QueryVariables, Clone, Debug)]

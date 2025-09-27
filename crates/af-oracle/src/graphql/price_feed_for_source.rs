@@ -18,7 +18,7 @@ where
 {
     let key = Key::new(source_wrapper_id.into()).move_instance(af_oracle_pkg);
     let raw_move_value = client
-        .owner_df_content(price_feed_storage.into(), key.try_into()?, None)
+        .owner_df_content(price_feed_storage, key.try_into()?, None)
         .await;
     match raw_move_value {
         Ok(raw) => Ok(Some(raw.try_into()?)),

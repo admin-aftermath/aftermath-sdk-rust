@@ -115,7 +115,7 @@ impl ProgrammableTransactionBuilder {
             Input::ImmutableOrOwned(object_reference) => *object_reference.object_id(),
             Input::Shared { object_id, .. } => *object_id,
             Input::Receiving(object_reference) => *object_reference.object_id(),
-            _ => todo!(),
+            _ => panic!("unknown Input variant"),
         };
         let key = BuilderArg::Object(id);
         let mut input_arg = obj_arg;
@@ -299,6 +299,7 @@ pub enum Command {
     Upgrade(Vec<Vec<u8>>, Vec<Address>, Address, Argument),
 }
 
+#[allow(clippy::fallible_impl_from)]
 impl From<sui_sdk_types::Command> for Command {
     fn from(value: sui_sdk_types::Command) -> Self {
         use sui_sdk_types::Command::*;

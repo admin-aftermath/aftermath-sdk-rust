@@ -189,7 +189,7 @@ impl ProgrammableTransactionBuilder {
             price_updates = price_updates_;
         }
         ptbuilder!(self {
-            type T = PriceInfo::type_(pyth_pkg.into()).into();
+            type T = PriceInfo::type_(pyth_pkg).into();
             pyth::hot_potato_vector::destroy<T>(price_updates);
         });
 

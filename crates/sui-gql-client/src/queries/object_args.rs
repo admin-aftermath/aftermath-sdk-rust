@@ -288,7 +288,7 @@ pub(crate) fn build_object_arg_default(
 ) -> Option<ObjectArg> {
     Some(match owner {
         ObjectOwner::Immutable(_) | ObjectOwner::Parent(_) | ObjectOwner::AddressOwner(_) => {
-            ObjectArg::ImmOrOwnedObject((id, version, digest?.0.into()))
+            ObjectArg::ImmOrOwnedObject((id, version, digest?.0))
         }
         ObjectOwner::Shared(Shared {
             initial_shared_version,

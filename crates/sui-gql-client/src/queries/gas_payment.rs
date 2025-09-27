@@ -66,7 +66,7 @@ pub(super) async fn query<C: GraphQlClient>(
         {
             let digest = digest.ok_or(Error::MissingCoinDigest)?;
             let coin_balance = coin_balance.ok_or(Error::MissingCoinBalance)?.into_inner();
-            coins.push((object_id, version, digest.0.into()));
+            coins.push((object_id, version, digest.0));
             balance += coin_balance;
             if balance >= budget {
                 return Ok(coins);

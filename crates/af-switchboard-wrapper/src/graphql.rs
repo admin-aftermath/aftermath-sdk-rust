@@ -30,7 +30,7 @@ pub trait GraphQlClientExt: GraphQlClient + Sized {
         async move {
             let key = Key::new().move_instance(switchboard_wrapper_pkg);
             let raw = self
-                .owner_df_content(price_feed.into(), key.try_into()?, None)
+                .owner_df_content(price_feed, key.try_into()?, None)
                 .await
                 .map_err(Error::OwnerDfContent)?;
             let pf: MoveInstance<ID> = raw.try_into()?;
