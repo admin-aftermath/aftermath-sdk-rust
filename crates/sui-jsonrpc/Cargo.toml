@@ -48,9 +48,9 @@ default = ["client"]
 # to this crate
 # https://rust-lang.github.io/rfcs/3516-public-private-dependencies.html
 futures-core          = { version = "0.3", public = true, optional = true }
-jsonrpsee-core        = { version = "0.25", public = true, optional = true }
-jsonrpsee-http-client = { version = "0.25", public = true, optional = true }
-jsonrpsee-types       = { version = "0.25", public = true, optional = true }
+jsonrpsee-core        = { version = "0.26", public = true, optional = true }
+jsonrpsee-http-client = { version = "0.26", public = true, optional = true }
+jsonrpsee-types       = { version = "0.26", public = true, optional = true }
 serde                 = { version = "1", public = true }
 serde_json            = { version = "1", public = true }
 sui-sdk-types         = { version = "0.0.7", public = true, features = ["hash", "serde"] }
@@ -72,7 +72,7 @@ async-stream     = { version = "0.3", optional = true }
 extension-traits = { version = "2", optional = true }
 futures-util     = { version = "0.3", optional = true }
 http             = { version = "1", optional = true }
-jsonrpsee        = { version = "0.25", optional = true }
+jsonrpsee        = { version = "0.26", optional = true }
 rustversion      = "1"
 
 [dev-dependencies]
