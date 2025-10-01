@@ -23,6 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.1](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/sui-framework-sdk-v0.13.0...sui-framework-sdk-v0.13.1)
+
+### ⚙️ Miscellaneous Tasks
+
+- *(docs)* Replace removed feature - ([e3e67b6](https://github.com/AftermathFinance/aftermath-sdk-rust/commit/e3e67b64f88890bcf457981026966f22d3936b25))
+
+
 ## [0.12.2](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/sui-framework-sdk-v0.12.1...sui-framework-sdk-v0.12.2)
 
 ### ⚙️ Miscellaneous Tasks

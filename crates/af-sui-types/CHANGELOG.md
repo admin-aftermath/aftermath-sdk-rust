@@ -26,6 +26,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.1](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/af-sui-types-v0.14.0...af-sui-types-v0.14.1)
+
+### ⚙️ Miscellaneous Tasks
+
+- *(docs)* Replace removed feature - ([e3e67b6](https://github.com/AftermathFinance/aftermath-sdk-rust/commit/e3e67b64f88890bcf457981026966f22d3936b25))
+
+
 ## [0.12.0](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/af-sui-types-v0.11.0...af-sui-types-v0.12.0)
 
 ### ⛰️ Features

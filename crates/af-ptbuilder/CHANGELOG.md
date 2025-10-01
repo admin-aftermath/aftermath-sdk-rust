@@ -23,6 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.0.1](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/af-ptbuilder-v9.0.0...af-ptbuilder-v9.0.1)
+
+### ⚙️ Miscellaneous Tasks
+
+- *(docs)* Replace removed feature - ([e3e67b6](https://github.com/AftermathFinance/aftermath-sdk-rust/commit/e3e67b64f88890bcf457981026966f22d3936b25))
+
+
 ## [8.0.0](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/af-ptbuilder-v7.0.0...af-ptbuilder-v8.0.0)
 
 ### ⛰️ Features

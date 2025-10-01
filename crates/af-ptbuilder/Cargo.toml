@@ -1,7 +1,7 @@
 [package]
 description = "Programmable transaction builder and macros (offline)"
 name        = "af-ptbuilder"
-version     = "9.0.0"
+version     = "9.0.1"
 
 authors.workspace      = true
 categories.workspace   = true

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.29](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/af-switchboard-wrapper-v0.0.28...af-switchboard-wrapper-v0.0.29)
+
+### ⚙️ Miscellaneous Tasks
+
+- *(docs)* Replace removed feature - ([e3e67b6](https://github.com/AftermathFinance/aftermath-sdk-rust/commit/e3e67b64f88890bcf457981026966f22d3936b25))
+
+
 ## [0.0.27](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/af-switchboard-wrapper-v0.0.26...af-switchboard-wrapper-v0.0.27)
 
 ### ⚙️ Miscellaneous Tasks

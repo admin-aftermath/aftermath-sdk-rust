@@ -30,6 +30,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.22.1](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/pyth-sui-sdk-v0.22.0...pyth-sui-sdk-v0.22.1)
+
+### ⚙️ Miscellaneous Tasks
+
+- *(docs)* Replace removed feature - ([e3e67b6](https://github.com/AftermathFinance/aftermath-sdk-rust/commit/e3e67b64f88890bcf457981026966f22d3936b25))
+
+
 ## [0.21.0](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/pyth-sui-sdk-v0.20.0...pyth-sui-sdk-v0.21.0)
 
 ### ⛰️ Features
