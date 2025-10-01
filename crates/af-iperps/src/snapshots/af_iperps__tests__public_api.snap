@@ -1,6 +1,5 @@
 ---
 source: crates/af-iperps/src/lib.rs
-assertion_line: 1087
 expression: public_api
 ---
 pub mod af_iperps
@@ -183,6 +182,7 @@ pub struct af_iperps::clearing_house::ClearingHouse<T: af_move_type::MoveType>
 pub af_iperps::clearing_house::ClearingHouse::id: sui_framework_sdk::object::UID
 pub af_iperps::clearing_house::ClearingHouse::market_params: af_iperps::market::MarketParams
 pub af_iperps::clearing_house::ClearingHouse::market_state: af_iperps::market::MarketState
+pub af_iperps::clearing_house::ClearingHouse::paused: bool
 pub af_iperps::clearing_house::ClearingHouse::version: u64
 impl<T: af_move_type::MoveType> af_iperps::clearing_house::ClearingHouse<T>
 pub const fn af_iperps::clearing_house::ClearingHouse<T>::governing_package_testnet(&self) -> sui_sdk_types::address::Address
@@ -194,7 +194,7 @@ impl<T: af_move_type::MoveType> af_iperps::clearing_house::ClearingHouse<T>
 pub fn af_iperps::clearing_house::ClearingHouse<T>::move_instance(self, address: sui_sdk_types::address::Address, t: <T as af_move_type::MoveType>::TypeTag) -> af_move_type::MoveInstance<Self>
 pub fn af_iperps::clearing_house::ClearingHouse<T>::type_(address: sui_sdk_types::address::Address, t: <T as af_move_type::MoveType>::TypeTag) -> af_iperps::clearing_house::ClearingHouseTypeTag<T>
 impl<T: af_move_type::MoveType> af_iperps::clearing_house::ClearingHouse<T>
-pub fn af_iperps::clearing_house::ClearingHouse<T>::new(id: sui_framework_sdk::object::UID, version: u64, market_params: af_iperps::market::MarketParams, market_state: af_iperps::market::MarketState) -> Self
+pub fn af_iperps::clearing_house::ClearingHouse<T>::new(id: sui_framework_sdk::object::UID, version: u64, paused: bool, market_params: af_iperps::market::MarketParams, market_state: af_iperps::market::MarketState) -> Self
 impl<T: af_move_type::MoveType + af_move_type::StaticTypeTag> af_move_type::StaticTypeParams for af_iperps::clearing_house::ClearingHouse<T>
 pub fn af_iperps::clearing_house::ClearingHouse<T>::type_params() -> alloc::vec::Vec<sui_sdk_types::type_tag::TypeTag>
 impl<T: af_move_type::MoveType> af_iperps::math::OrderBookUnits for af_iperps::clearing_house::ClearingHouse<T>
@@ -236,12 +236,12 @@ pub type af_iperps::clearing_house::ClearingHouseTypeTag<T>::Err = af_move_type:
 pub fn af_iperps::clearing_house::ClearingHouseTypeTag<T>::from_str(s: &str) -> core::result::Result<Self, Self::Err>
 pub struct af_iperps::clearing_house::IntegratorInfo
 pub af_iperps::clearing_house::IntegratorInfo::integrator_address: sui_sdk_types::address::Address
-pub af_iperps::clearing_house::IntegratorInfo::taker_fee: af_sui_types::move_core::u256::U256
+pub af_iperps::clearing_house::IntegratorInfo::taker_fee: af_utilities::types::ifixed::IFixed
 impl af_iperps::clearing_house::IntegratorInfo
 pub fn af_iperps::clearing_house::IntegratorInfo::move_instance(self, address: sui_sdk_types::address::Address) -> af_move_type::MoveInstance<Self>
 pub fn af_iperps::clearing_house::IntegratorInfo::type_(address: sui_sdk_types::address::Address) -> af_iperps::clearing_house::IntegratorInfoTypeTag
 impl af_iperps::clearing_house::IntegratorInfo
-pub fn af_iperps::clearing_house::IntegratorInfo::new(integrator_address: sui_sdk_types::address::Address, taker_fee: af_sui_types::move_core::u256::U256) -> Self
+pub fn af_iperps::clearing_house::IntegratorInfo::new(integrator_address: sui_sdk_types::address::Address, taker_fee: af_utilities::types::ifixed::IFixed) -> Self
 impl af_move_type::MoveStruct for af_iperps::clearing_house::IntegratorInfo
 pub type af_iperps::clearing_house::IntegratorInfo::StructTag = af_iperps::clearing_house::IntegratorInfoTypeTag
 impl af_move_type::MoveType for af_iperps::clearing_house::IntegratorInfo
@@ -504,6 +504,47 @@ pub fn af_iperps::clearing_house::SessionSummaryTypeTag::fmt(&self, f: &mut core
 impl core::str::traits::FromStr for af_iperps::clearing_house::SessionSummaryTypeTag
 pub type af_iperps::clearing_house::SessionSummaryTypeTag::Err = af_move_type::ParseStructTagError
 pub fn af_iperps::clearing_house::SessionSummaryTypeTag::from_str(s: &str) -> core::result::Result<Self, Self::Err>
+pub struct af_iperps::clearing_house::SettlementPrices
+pub af_iperps::clearing_house::SettlementPrices::base_price: af_utilities::types::ifixed::IFixed
+pub af_iperps::clearing_house::SettlementPrices::collateral_price: af_utilities::types::ifixed::IFixed
+impl af_iperps::clearing_house::SettlementPrices
+pub fn af_iperps::clearing_house::SettlementPrices::move_instance(self, address: sui_sdk_types::address::Address) -> af_move_type::MoveInstance<Self>
+pub fn af_iperps::clearing_house::SettlementPrices::type_(address: sui_sdk_types::address::Address) -> af_iperps::clearing_house::SettlementPricesTypeTag
+impl af_iperps::clearing_house::SettlementPrices
+pub fn af_iperps::clearing_house::SettlementPrices::new(base_price: af_utilities::types::ifixed::IFixed, collateral_price: af_utilities::types::ifixed::IFixed) -> Self
+impl af_move_type::MoveStruct for af_iperps::clearing_house::SettlementPrices
+pub type af_iperps::clearing_house::SettlementPrices::StructTag = af_iperps::clearing_house::SettlementPricesTypeTag
+impl af_move_type::MoveType for af_iperps::clearing_house::SettlementPrices
+pub type af_iperps::clearing_house::SettlementPrices::TypeTag = af_iperps::clearing_house::SettlementPricesTypeTag
+impl af_move_type::StaticModule for af_iperps::clearing_house::SettlementPrices
+pub fn af_iperps::clearing_house::SettlementPrices::module() -> sui_sdk_types::type_tag::Identifier
+impl af_move_type::StaticName for af_iperps::clearing_house::SettlementPrices
+pub fn af_iperps::clearing_house::SettlementPrices::name() -> sui_sdk_types::type_tag::Identifier
+impl af_move_type::StaticTypeParams for af_iperps::clearing_house::SettlementPrices
+pub fn af_iperps::clearing_house::SettlementPrices::type_params() -> alloc::vec::Vec<sui_sdk_types::type_tag::TypeTag>
+impl core::fmt::Display for af_iperps::clearing_house::SettlementPrices
+pub fn af_iperps::clearing_house::SettlementPrices::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl tabled::tabled::Tabled for af_iperps::clearing_house::SettlementPrices
+pub const af_iperps::clearing_house::SettlementPrices::LENGTH: usize
+pub fn af_iperps::clearing_house::SettlementPrices::fields(&self) -> alloc::vec::Vec<alloc::borrow::Cow<'_, str>>
+pub fn af_iperps::clearing_house::SettlementPrices::headers() -> alloc::vec::Vec<alloc::borrow::Cow<'static, str>>
+pub struct af_iperps::clearing_house::SettlementPricesTypeTag
+pub af_iperps::clearing_house::SettlementPricesTypeTag::address: sui_sdk_types::address::Address
+impl core::convert::From<af_iperps::clearing_house::SettlementPricesTypeTag> for sui_sdk_types::type_tag::StructTag
+pub fn sui_sdk_types::type_tag::StructTag::from(value: af_iperps::clearing_house::SettlementPricesTypeTag) -> Self
+impl core::convert::From<af_iperps::clearing_house::SettlementPricesTypeTag> for sui_sdk_types::type_tag::TypeTag
+pub fn sui_sdk_types::type_tag::TypeTag::from(value: af_iperps::clearing_house::SettlementPricesTypeTag) -> Self
+impl core::convert::TryFrom<sui_sdk_types::type_tag::StructTag> for af_iperps::clearing_house::SettlementPricesTypeTag
+pub type af_iperps::clearing_house::SettlementPricesTypeTag::Error = af_move_type::StructTagError
+pub fn af_iperps::clearing_house::SettlementPricesTypeTag::try_from(value: sui_sdk_types::type_tag::StructTag) -> core::result::Result<Self, Self::Error>
+impl core::convert::TryFrom<sui_sdk_types::type_tag::TypeTag> for af_iperps::clearing_house::SettlementPricesTypeTag
+pub type af_iperps::clearing_house::SettlementPricesTypeTag::Error = af_move_type::TypeTagError
+pub fn af_iperps::clearing_house::SettlementPricesTypeTag::try_from(value: sui_sdk_types::type_tag::TypeTag) -> core::result::Result<Self, Self::Error>
+impl core::fmt::Display for af_iperps::clearing_house::SettlementPricesTypeTag
+pub fn af_iperps::clearing_house::SettlementPricesTypeTag::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::str::traits::FromStr for af_iperps::clearing_house::SettlementPricesTypeTag
+pub type af_iperps::clearing_house::SettlementPricesTypeTag::Err = af_move_type::ParseStructTagError
+pub fn af_iperps::clearing_house::SettlementPricesTypeTag::from_str(s: &str) -> core::result::Result<Self, Self::Err>
 pub struct af_iperps::clearing_house::Vault<T: af_move_type::MoveType>
 pub af_iperps::clearing_house::Vault::collateral_balance: sui_framework_sdk::balance::Balance<T>
 pub af_iperps::clearing_house::Vault::insurance_fund_balance: sui_framework_sdk::balance::Balance<T>
@@ -582,7 +623,11 @@ pub af_iperps::errors::MoveAbort::KeyNotExist = 3001
 pub af_iperps::errors::MoveAbort::LiquidateNotFirstOperation = 6
 pub af_iperps::errors::MoveAbort::MapTooSmall = 3007
 pub af_iperps::errors::MoveAbort::MarketAlreadyRegistered = 18
+pub af_iperps::errors::MoveAbort::MarketIsClosed = 1013
+pub af_iperps::errors::MoveAbort::MarketIsNotClosed = 1012
+pub af_iperps::errors::MoveAbort::MarketIsNotPaused = 1011
 pub af_iperps::errors::MoveAbort::MarketIsNotRegistered = 20
+pub af_iperps::errors::MoveAbort::MarketIsPaused = 1010
 pub af_iperps::errors::MoveAbort::MaxOpenInterestPositionPercentSurpassed = 29
 pub af_iperps::errors::MoveAbort::MaxOpenInterestSurpassed = 28
 pub af_iperps::errors::MoveAbort::MaxPendingOrdersExceeded = 2000
@@ -657,7 +702,11 @@ pub const af_iperps::errors::KeyNotExist: u64
 pub const af_iperps::errors::LiquidateNotFirstOperation: u64
 pub const af_iperps::errors::MapTooSmall: u64
 pub const af_iperps::errors::MarketAlreadyRegistered: u64
+pub const af_iperps::errors::MarketIsClosed: u64
+pub const af_iperps::errors::MarketIsNotClosed: u64
+pub const af_iperps::errors::MarketIsNotPaused: u64
 pub const af_iperps::errors::MarketIsNotRegistered: u64
+pub const af_iperps::errors::MarketIsPaused: u64
 pub const af_iperps::errors::MaxOpenInterestPositionPercentSurpassed: u64
 pub const af_iperps::errors::MaxOpenInterestSurpassed: u64
 pub const af_iperps::errors::MaxPendingOrdersExceeded: u64
@@ -708,6 +757,8 @@ pub af_iperps::event_instance::EventInstance::AcceptedPositionFeesProposal(af_mo
 pub af_iperps::event_instance::EventInstance::AddedIntegratorConfig(af_move_type::MoveInstance<af_iperps::events::AddedIntegratorConfig<af_move_type::otw::Otw>>)
 pub af_iperps::event_instance::EventInstance::AllocatedCollateral(af_move_type::MoveInstance<af_iperps::events::AllocatedCollateral>)
 pub af_iperps::event_instance::EventInstance::CanceledOrder(af_move_type::MoveInstance<af_iperps::events::CanceledOrder>)
+pub af_iperps::event_instance::EventInstance::ClosedMarket(af_move_type::MoveInstance<af_iperps::events::ClosedMarket>)
+pub af_iperps::event_instance::EventInstance::ClosedPositionAtSettlementPrices(af_move_type::MoveInstance<af_iperps::events::ClosedPositionAtSettlementPrices>)
 pub af_iperps::event_instance::EventInstance::CreatedAccount(af_move_type::MoveInstance<af_iperps::events::CreatedAccount<af_move_type::otw::Otw>>)
 pub af_iperps::event_instance::EventInstance::CreatedClearingHouse(af_move_type::MoveInstance<af_iperps::events::CreatedClearingHouse>)
 pub af_iperps::event_instance::EventInstance::CreatedIntegratorVault(af_move_type::MoveInstance<af_iperps::events::CreatedIntegratorVault>)
@@ -730,6 +781,7 @@ pub af_iperps::event_instance::EventInstance::FilledMakerOrders(af_move_type::Mo
 pub af_iperps::event_instance::EventInstance::FilledTakerOrder(af_move_type::MoveInstance<af_iperps::events::FilledTakerOrder>)
 pub af_iperps::event_instance::EventInstance::LiquidatedPosition(af_move_type::MoveInstance<af_iperps::events::LiquidatedPosition>)
 pub af_iperps::event_instance::EventInstance::PaidIntegratorFees(af_move_type::MoveInstance<af_iperps::events::PaidIntegratorFees<af_move_type::otw::Otw>>)
+pub af_iperps::event_instance::EventInstance::PausedMarket(af_move_type::MoveInstance<af_iperps::events::PausedMarket>)
 pub af_iperps::event_instance::EventInstance::PerformedLiquidation(af_move_type::MoveInstance<af_iperps::events::PerformedLiquidation>)
 pub af_iperps::event_instance::EventInstance::PostedOrder(af_move_type::MoveInstance<af_iperps::events::PostedOrder>)
 pub af_iperps::event_instance::EventInstance::RegisteredCollateralInfo(af_move_type::MoveInstance<af_iperps::events::RegisteredCollateralInfo<af_move_type::otw::Otw>>)
@@ -738,6 +790,7 @@ pub af_iperps::event_instance::EventInstance::RejectedPositionFeesProposal(af_mo
 pub af_iperps::event_instance::EventInstance::RemovedIntegratorConfig(af_move_type::MoveInstance<af_iperps::events::RemovedIntegratorConfig<af_move_type::otw::Otw>>)
 pub af_iperps::event_instance::EventInstance::RemovedRegisteredMarketInfo(af_move_type::MoveInstance<af_iperps::events::RemovedRegisteredMarketInfo<af_move_type::otw::Otw>>)
 pub af_iperps::event_instance::EventInstance::ResettedPositionFees(af_move_type::MoveInstance<af_iperps::events::ResettedPositionFees>)
+pub af_iperps::event_instance::EventInstance::ResumedMarket(af_move_type::MoveInstance<af_iperps::events::ResumedMarket>)
 pub af_iperps::event_instance::EventInstance::SetPositionInitialMarginRatio(af_move_type::MoveInstance<af_iperps::events::SetPositionInitialMarginRatio>)
 pub af_iperps::event_instance::EventInstance::SettledFunding(af_move_type::MoveInstance<af_iperps::events::SettledFunding>)
 pub af_iperps::event_instance::EventInstance::UpdatedBaseOracleTolerance(af_move_type::MoveInstance<af_iperps::events::UpdatedBaseOracleTolerance>)
@@ -944,6 +997,94 @@ pub fn af_iperps::events::CanceledOrderTypeTag::fmt(&self, f: &mut core::fmt::Fo
 impl core::str::traits::FromStr for af_iperps::events::CanceledOrderTypeTag
 pub type af_iperps::events::CanceledOrderTypeTag::Err = af_move_type::ParseStructTagError
 pub fn af_iperps::events::CanceledOrderTypeTag::from_str(s: &str) -> core::result::Result<Self, Self::Err>
+pub struct af_iperps::events::ClosedMarket
+pub af_iperps::events::ClosedMarket::base_settlement_price: af_sui_types::move_core::u256::U256
+pub af_iperps::events::ClosedMarket::ch_id: sui_framework_sdk::object::ID
+pub af_iperps::events::ClosedMarket::collateral_settlement_price: af_sui_types::move_core::u256::U256
+impl af_iperps::events::ClosedMarket
+pub fn af_iperps::events::ClosedMarket::move_instance(self, address: sui_sdk_types::address::Address) -> af_move_type::MoveInstance<Self>
+pub fn af_iperps::events::ClosedMarket::type_(address: sui_sdk_types::address::Address) -> af_iperps::events::ClosedMarketTypeTag
+impl af_iperps::events::ClosedMarket
+pub fn af_iperps::events::ClosedMarket::new(ch_id: sui_framework_sdk::object::ID, base_settlement_price: af_sui_types::move_core::u256::U256, collateral_settlement_price: af_sui_types::move_core::u256::U256) -> Self
+impl af_move_type::MoveStruct for af_iperps::events::ClosedMarket
+pub type af_iperps::events::ClosedMarket::StructTag = af_iperps::events::ClosedMarketTypeTag
+impl af_move_type::MoveType for af_iperps::events::ClosedMarket
+pub type af_iperps::events::ClosedMarket::TypeTag = af_iperps::events::ClosedMarketTypeTag
+impl af_move_type::StaticModule for af_iperps::events::ClosedMarket
+pub fn af_iperps::events::ClosedMarket::module() -> sui_sdk_types::type_tag::Identifier
+impl af_move_type::StaticName for af_iperps::events::ClosedMarket
+pub fn af_iperps::events::ClosedMarket::name() -> sui_sdk_types::type_tag::Identifier
+impl af_move_type::StaticTypeParams for af_iperps::events::ClosedMarket
+pub fn af_iperps::events::ClosedMarket::type_params() -> alloc::vec::Vec<sui_sdk_types::type_tag::TypeTag>
+impl core::fmt::Display for af_iperps::events::ClosedMarket
+pub fn af_iperps::events::ClosedMarket::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl tabled::tabled::Tabled for af_iperps::events::ClosedMarket
+pub const af_iperps::events::ClosedMarket::LENGTH: usize
+pub fn af_iperps::events::ClosedMarket::fields(&self) -> alloc::vec::Vec<alloc::borrow::Cow<'_, str>>
+pub fn af_iperps::events::ClosedMarket::headers() -> alloc::vec::Vec<alloc::borrow::Cow<'static, str>>
+pub struct af_iperps::events::ClosedMarketTypeTag
+pub af_iperps::events::ClosedMarketTypeTag::address: sui_sdk_types::address::Address
+impl core::convert::From<af_iperps::events::ClosedMarketTypeTag> for sui_sdk_types::type_tag::StructTag
+pub fn sui_sdk_types::type_tag::StructTag::from(value: af_iperps::events::ClosedMarketTypeTag) -> Self
+impl core::convert::From<af_iperps::events::ClosedMarketTypeTag> for sui_sdk_types::type_tag::TypeTag
+pub fn sui_sdk_types::type_tag::TypeTag::from(value: af_iperps::events::ClosedMarketTypeTag) -> Self
+impl core::convert::TryFrom<sui_sdk_types::type_tag::StructTag> for af_iperps::events::ClosedMarketTypeTag
+pub type af_iperps::events::ClosedMarketTypeTag::Error = af_move_type::StructTagError
+pub fn af_iperps::events::ClosedMarketTypeTag::try_from(value: sui_sdk_types::type_tag::StructTag) -> core::result::Result<Self, Self::Error>
+impl core::convert::TryFrom<sui_sdk_types::type_tag::TypeTag> for af_iperps::events::ClosedMarketTypeTag
+pub type af_iperps::events::ClosedMarketTypeTag::Error = af_move_type::TypeTagError
+pub fn af_iperps::events::ClosedMarketTypeTag::try_from(value: sui_sdk_types::type_tag::TypeTag) -> core::result::Result<Self, Self::Error>
+impl core::fmt::Display for af_iperps::events::ClosedMarketTypeTag
+pub fn af_iperps::events::ClosedMarketTypeTag::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::str::traits::FromStr for af_iperps::events::ClosedMarketTypeTag
+pub type af_iperps::events::ClosedMarketTypeTag::Err = af_move_type::ParseStructTagError
+pub fn af_iperps::events::ClosedMarketTypeTag::from_str(s: &str) -> core::result::Result<Self, Self::Err>
+pub struct af_iperps::events::ClosedPositionAtSettlementPrices
+pub af_iperps::events::ClosedPositionAtSettlementPrices::account_id: u64
+pub af_iperps::events::ClosedPositionAtSettlementPrices::bad_debt: af_utilities::types::ifixed::IFixed
+pub af_iperps::events::ClosedPositionAtSettlementPrices::base_asset_amount: af_utilities::types::ifixed::IFixed
+pub af_iperps::events::ClosedPositionAtSettlementPrices::ch_id: sui_framework_sdk::object::ID
+pub af_iperps::events::ClosedPositionAtSettlementPrices::deallocated_collateral: u64
+pub af_iperps::events::ClosedPositionAtSettlementPrices::pnl: af_utilities::types::ifixed::IFixed
+pub af_iperps::events::ClosedPositionAtSettlementPrices::quote_asset_amount: af_utilities::types::ifixed::IFixed
+impl af_iperps::events::ClosedPositionAtSettlementPrices
+pub fn af_iperps::events::ClosedPositionAtSettlementPrices::move_instance(self, address: sui_sdk_types::address::Address) -> af_move_type::MoveInstance<Self>
+pub fn af_iperps::events::ClosedPositionAtSettlementPrices::type_(address: sui_sdk_types::address::Address) -> af_iperps::events::ClosedPositionAtSettlementPricesTypeTag
+impl af_iperps::events::ClosedPositionAtSettlementPrices
+pub fn af_iperps::events::ClosedPositionAtSettlementPrices::new(ch_id: sui_framework_sdk::object::ID, account_id: u64, pnl: af_utilities::types::ifixed::IFixed, base_asset_amount: af_utilities::types::ifixed::IFixed, quote_asset_amount: af_utilities::types::ifixed::IFixed, deallocated_collateral: u64, bad_debt: af_utilities::types::ifixed::IFixed) -> Self
+impl af_move_type::MoveStruct for af_iperps::events::ClosedPositionAtSettlementPrices
+pub type af_iperps::events::ClosedPositionAtSettlementPrices::StructTag = af_iperps::events::ClosedPositionAtSettlementPricesTypeTag
+impl af_move_type::MoveType for af_iperps::events::ClosedPositionAtSettlementPrices
+pub type af_iperps::events::ClosedPositionAtSettlementPrices::TypeTag = af_iperps::events::ClosedPositionAtSettlementPricesTypeTag
+impl af_move_type::StaticModule for af_iperps::events::ClosedPositionAtSettlementPrices
+pub fn af_iperps::events::ClosedPositionAtSettlementPrices::module() -> sui_sdk_types::type_tag::Identifier
+impl af_move_type::StaticName for af_iperps::events::ClosedPositionAtSettlementPrices
+pub fn af_iperps::events::ClosedPositionAtSettlementPrices::name() -> sui_sdk_types::type_tag::Identifier
+impl af_move_type::StaticTypeParams for af_iperps::events::ClosedPositionAtSettlementPrices
+pub fn af_iperps::events::ClosedPositionAtSettlementPrices::type_params() -> alloc::vec::Vec<sui_sdk_types::type_tag::TypeTag>
+impl core::fmt::Display for af_iperps::events::ClosedPositionAtSettlementPrices
+pub fn af_iperps::events::ClosedPositionAtSettlementPrices::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl tabled::tabled::Tabled for af_iperps::events::ClosedPositionAtSettlementPrices
+pub const af_iperps::events::ClosedPositionAtSettlementPrices::LENGTH: usize
+pub fn af_iperps::events::ClosedPositionAtSettlementPrices::fields(&self) -> alloc::vec::Vec<alloc::borrow::Cow<'_, str>>
+pub fn af_iperps::events::ClosedPositionAtSettlementPrices::headers() -> alloc::vec::Vec<alloc::borrow::Cow<'static, str>>
+pub struct af_iperps::events::ClosedPositionAtSettlementPricesTypeTag
+pub af_iperps::events::ClosedPositionAtSettlementPricesTypeTag::address: sui_sdk_types::address::Address
+impl core::convert::From<af_iperps::events::ClosedPositionAtSettlementPricesTypeTag> for sui_sdk_types::type_tag::StructTag
+pub fn sui_sdk_types::type_tag::StructTag::from(value: af_iperps::events::ClosedPositionAtSettlementPricesTypeTag) -> Self
+impl core::convert::From<af_iperps::events::ClosedPositionAtSettlementPricesTypeTag> for sui_sdk_types::type_tag::TypeTag
+pub fn sui_sdk_types::type_tag::TypeTag::from(value: af_iperps::events::ClosedPositionAtSettlementPricesTypeTag) -> Self
+impl core::convert::TryFrom<sui_sdk_types::type_tag::StructTag> for af_iperps::events::ClosedPositionAtSettlementPricesTypeTag
+pub type af_iperps::events::ClosedPositionAtSettlementPricesTypeTag::Error = af_move_type::StructTagError
+pub fn af_iperps::events::ClosedPositionAtSettlementPricesTypeTag::try_from(value: sui_sdk_types::type_tag::StructTag) -> core::result::Result<Self, Self::Error>
+impl core::convert::TryFrom<sui_sdk_types::type_tag::TypeTag> for af_iperps::events::ClosedPositionAtSettlementPricesTypeTag
+pub type af_iperps::events::ClosedPositionAtSettlementPricesTypeTag::Error = af_move_type::TypeTagError
+pub fn af_iperps::events::ClosedPositionAtSettlementPricesTypeTag::try_from(value: sui_sdk_types::type_tag::TypeTag) -> core::result::Result<Self, Self::Error>
+impl core::fmt::Display for af_iperps::events::ClosedPositionAtSettlementPricesTypeTag
+pub fn af_iperps::events::ClosedPositionAtSettlementPricesTypeTag::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::str::traits::FromStr for af_iperps::events::ClosedPositionAtSettlementPricesTypeTag
+pub type af_iperps::events::ClosedPositionAtSettlementPricesTypeTag::Err = af_move_type::ParseStructTagError
+pub fn af_iperps::events::ClosedPositionAtSettlementPricesTypeTag::from_str(s: &str) -> core::result::Result<Self, Self::Err>
 pub struct af_iperps::events::CreatedAccount<T: af_move_type::MoveType>
 pub af_iperps::events::CreatedAccount::account_id: u64
 pub af_iperps::events::CreatedAccount::account_obj_id: sui_framework_sdk::object::ID
@@ -1922,6 +2063,46 @@ pub fn af_iperps::events::PaidIntegratorFeesTypeTag<T>::fmt(&self, f: &mut core:
 impl<T: af_move_type::MoveType> core::str::traits::FromStr for af_iperps::events::PaidIntegratorFeesTypeTag<T>
 pub type af_iperps::events::PaidIntegratorFeesTypeTag<T>::Err = af_move_type::ParseStructTagError
 pub fn af_iperps::events::PaidIntegratorFeesTypeTag<T>::from_str(s: &str) -> core::result::Result<Self, Self::Err>
+pub struct af_iperps::events::PausedMarket
+pub af_iperps::events::PausedMarket::ch_id: sui_framework_sdk::object::ID
+impl af_iperps::events::PausedMarket
+pub fn af_iperps::events::PausedMarket::move_instance(self, address: sui_sdk_types::address::Address) -> af_move_type::MoveInstance<Self>
+pub fn af_iperps::events::PausedMarket::type_(address: sui_sdk_types::address::Address) -> af_iperps::events::PausedMarketTypeTag
+impl af_iperps::events::PausedMarket
+pub fn af_iperps::events::PausedMarket::new(ch_id: sui_framework_sdk::object::ID) -> Self
+impl af_move_type::MoveStruct for af_iperps::events::PausedMarket
+pub type af_iperps::events::PausedMarket::StructTag = af_iperps::events::PausedMarketTypeTag
+impl af_move_type::MoveType for af_iperps::events::PausedMarket
+pub type af_iperps::events::PausedMarket::TypeTag = af_iperps::events::PausedMarketTypeTag
+impl af_move_type::StaticModule for af_iperps::events::PausedMarket
+pub fn af_iperps::events::PausedMarket::module() -> sui_sdk_types::type_tag::Identifier
+impl af_move_type::StaticName for af_iperps::events::PausedMarket
+pub fn af_iperps::events::PausedMarket::name() -> sui_sdk_types::type_tag::Identifier
+impl af_move_type::StaticTypeParams for af_iperps::events::PausedMarket
+pub fn af_iperps::events::PausedMarket::type_params() -> alloc::vec::Vec<sui_sdk_types::type_tag::TypeTag>
+impl core::fmt::Display for af_iperps::events::PausedMarket
+pub fn af_iperps::events::PausedMarket::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl tabled::tabled::Tabled for af_iperps::events::PausedMarket
+pub const af_iperps::events::PausedMarket::LENGTH: usize
+pub fn af_iperps::events::PausedMarket::fields(&self) -> alloc::vec::Vec<alloc::borrow::Cow<'_, str>>
+pub fn af_iperps::events::PausedMarket::headers() -> alloc::vec::Vec<alloc::borrow::Cow<'static, str>>
+pub struct af_iperps::events::PausedMarketTypeTag
+pub af_iperps::events::PausedMarketTypeTag::address: sui_sdk_types::address::Address
+impl core::convert::From<af_iperps::events::PausedMarketTypeTag> for sui_sdk_types::type_tag::StructTag
+pub fn sui_sdk_types::type_tag::StructTag::from(value: af_iperps::events::PausedMarketTypeTag) -> Self
+impl core::convert::From<af_iperps::events::PausedMarketTypeTag> for sui_sdk_types::type_tag::TypeTag
+pub fn sui_sdk_types::type_tag::TypeTag::from(value: af_iperps::events::PausedMarketTypeTag) -> Self
+impl core::convert::TryFrom<sui_sdk_types::type_tag::StructTag> for af_iperps::events::PausedMarketTypeTag
+pub type af_iperps::events::PausedMarketTypeTag::Error = af_move_type::StructTagError
+pub fn af_iperps::events::PausedMarketTypeTag::try_from(value: sui_sdk_types::type_tag::StructTag) -> core::result::Result<Self, Self::Error>
+impl core::convert::TryFrom<sui_sdk_types::type_tag::TypeTag> for af_iperps::events::PausedMarketTypeTag
+pub type af_iperps::events::PausedMarketTypeTag::Error = af_move_type::TypeTagError
+pub fn af_iperps::events::PausedMarketTypeTag::try_from(value: sui_sdk_types::type_tag::TypeTag) -> core::result::Result<Self, Self::Error>
+impl core::fmt::Display for af_iperps::events::PausedMarketTypeTag
+pub fn af_iperps::events::PausedMarketTypeTag::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::str::traits::FromStr for af_iperps::events::PausedMarketTypeTag
+pub type af_iperps::events::PausedMarketTypeTag::Err = af_move_type::ParseStructTagError
+pub fn af_iperps::events::PausedMarketTypeTag::from_str(s: &str) -> core::result::Result<Self, Self::Err>
 pub struct af_iperps::events::PerformedLiquidation
 pub af_iperps::events::PerformedLiquidation::base_liquidated: af_utilities::types::ifixed::IFixed
 pub af_iperps::events::PerformedLiquidation::ch_id: sui_framework_sdk::object::ID
@@ -2272,6 +2453,46 @@ pub fn af_iperps::events::ResettedPositionFeesTypeTag::fmt(&self, f: &mut core::
 impl core::str::traits::FromStr for af_iperps::events::ResettedPositionFeesTypeTag
 pub type af_iperps::events::ResettedPositionFeesTypeTag::Err = af_move_type::ParseStructTagError
 pub fn af_iperps::events::ResettedPositionFeesTypeTag::from_str(s: &str) -> core::result::Result<Self, Self::Err>
+pub struct af_iperps::events::ResumedMarket
+pub af_iperps::events::ResumedMarket::ch_id: sui_framework_sdk::object::ID
+impl af_iperps::events::ResumedMarket
+pub fn af_iperps::events::ResumedMarket::move_instance(self, address: sui_sdk_types::address::Address) -> af_move_type::MoveInstance<Self>
+pub fn af_iperps::events::ResumedMarket::type_(address: sui_sdk_types::address::Address) -> af_iperps::events::ResumedMarketTypeTag
+impl af_iperps::events::ResumedMarket
+pub fn af_iperps::events::ResumedMarket::new(ch_id: sui_framework_sdk::object::ID) -> Self
+impl af_move_type::MoveStruct for af_iperps::events::ResumedMarket
+pub type af_iperps::events::ResumedMarket::StructTag = af_iperps::events::ResumedMarketTypeTag
+impl af_move_type::MoveType for af_iperps::events::ResumedMarket
+pub type af_iperps::events::ResumedMarket::TypeTag = af_iperps::events::ResumedMarketTypeTag
+impl af_move_type::StaticModule for af_iperps::events::ResumedMarket
+pub fn af_iperps::events::ResumedMarket::module() -> sui_sdk_types::type_tag::Identifier
+impl af_move_type::StaticName for af_iperps::events::ResumedMarket
+pub fn af_iperps::events::ResumedMarket::name() -> sui_sdk_types::type_tag::Identifier
+impl af_move_type::StaticTypeParams for af_iperps::events::ResumedMarket
+pub fn af_iperps::events::ResumedMarket::type_params() -> alloc::vec::Vec<sui_sdk_types::type_tag::TypeTag>
+impl core::fmt::Display for af_iperps::events::ResumedMarket
+pub fn af_iperps::events::ResumedMarket::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl tabled::tabled::Tabled for af_iperps::events::ResumedMarket
+pub const af_iperps::events::ResumedMarket::LENGTH: usize
+pub fn af_iperps::events::ResumedMarket::fields(&self) -> alloc::vec::Vec<alloc::borrow::Cow<'_, str>>
+pub fn af_iperps::events::ResumedMarket::headers() -> alloc::vec::Vec<alloc::borrow::Cow<'static, str>>
+pub struct af_iperps::events::ResumedMarketTypeTag
+pub af_iperps::events::ResumedMarketTypeTag::address: sui_sdk_types::address::Address
+impl core::convert::From<af_iperps::events::ResumedMarketTypeTag> for sui_sdk_types::type_tag::StructTag
+pub fn sui_sdk_types::type_tag::StructTag::from(value: af_iperps::events::ResumedMarketTypeTag) -> Self
+impl core::convert::From<af_iperps::events::ResumedMarketTypeTag> for sui_sdk_types::type_tag::TypeTag
+pub fn sui_sdk_types::type_tag::TypeTag::from(value: af_iperps::events::ResumedMarketTypeTag) -> Self
+impl core::convert::TryFrom<sui_sdk_types::type_tag::StructTag> for af_iperps::events::ResumedMarketTypeTag
+pub type af_iperps::events::ResumedMarketTypeTag::Error = af_move_type::StructTagError
+pub fn af_iperps::events::ResumedMarketTypeTag::try_from(value: sui_sdk_types::type_tag::StructTag) -> core::result::Result<Self, Self::Error>
+impl core::convert::TryFrom<sui_sdk_types::type_tag::TypeTag> for af_iperps::events::ResumedMarketTypeTag
+pub type af_iperps::events::ResumedMarketTypeTag::Error = af_move_type::TypeTagError
+pub fn af_iperps::events::ResumedMarketTypeTag::try_from(value: sui_sdk_types::type_tag::TypeTag) -> core::result::Result<Self, Self::Error>
+impl core::fmt::Display for af_iperps::events::ResumedMarketTypeTag
+pub fn af_iperps::events::ResumedMarketTypeTag::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::str::traits::FromStr for af_iperps::events::ResumedMarketTypeTag
+pub type af_iperps::events::ResumedMarketTypeTag::Err = af_move_type::ParseStructTagError
+pub fn af_iperps::events::ResumedMarketTypeTag::from_str(s: &str) -> core::result::Result<Self, Self::Err>
 pub struct af_iperps::events::SetPositionInitialMarginRatio
 pub af_iperps::events::SetPositionInitialMarginRatio::account_id: u64
 pub af_iperps::events::SetPositionInitialMarginRatio::ch_id: sui_framework_sdk::object::ID
@@ -3863,6 +4084,47 @@ pub fn af_iperps::keys::RegistryMarketInfoTypeTag::fmt(&self, f: &mut core::fmt:
 impl core::str::traits::FromStr for af_iperps::keys::RegistryMarketInfoTypeTag
 pub type af_iperps::keys::RegistryMarketInfoTypeTag::Err = af_move_type::ParseStructTagError
 pub fn af_iperps::keys::RegistryMarketInfoTypeTag::from_str(s: &str) -> core::result::Result<Self, Self::Err>
+pub struct af_iperps::keys::SettlementPrices
+impl af_iperps::keys::SettlementPrices
+pub fn af_iperps::keys::SettlementPrices::move_instance(self, address: sui_sdk_types::address::Address) -> af_move_type::MoveInstance<Self>
+pub fn af_iperps::keys::SettlementPrices::type_(address: sui_sdk_types::address::Address) -> af_iperps::keys::SettlementPricesTypeTag
+impl af_iperps::keys::SettlementPrices
+pub fn af_iperps::keys::SettlementPrices::new() -> Self
+impl af_move_type::MoveStruct for af_iperps::keys::SettlementPrices
+pub type af_iperps::keys::SettlementPrices::StructTag = af_iperps::keys::SettlementPricesTypeTag
+impl af_move_type::MoveType for af_iperps::keys::SettlementPrices
+pub type af_iperps::keys::SettlementPrices::TypeTag = af_iperps::keys::SettlementPricesTypeTag
+impl af_move_type::StaticModule for af_iperps::keys::SettlementPrices
+pub fn af_iperps::keys::SettlementPrices::module() -> sui_sdk_types::type_tag::Identifier
+impl af_move_type::StaticName for af_iperps::keys::SettlementPrices
+pub fn af_iperps::keys::SettlementPrices::name() -> sui_sdk_types::type_tag::Identifier
+impl af_move_type::StaticTypeParams for af_iperps::keys::SettlementPrices
+pub fn af_iperps::keys::SettlementPrices::type_params() -> alloc::vec::Vec<sui_sdk_types::type_tag::TypeTag>
+impl core::default::Default for af_iperps::keys::SettlementPrices
+pub fn af_iperps::keys::SettlementPrices::default() -> Self
+impl core::fmt::Display for af_iperps::keys::SettlementPrices
+pub fn af_iperps::keys::SettlementPrices::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl tabled::tabled::Tabled for af_iperps::keys::SettlementPrices
+pub const af_iperps::keys::SettlementPrices::LENGTH: usize
+pub fn af_iperps::keys::SettlementPrices::fields(&self) -> alloc::vec::Vec<alloc::borrow::Cow<'_, str>>
+pub fn af_iperps::keys::SettlementPrices::headers() -> alloc::vec::Vec<alloc::borrow::Cow<'static, str>>
+pub struct af_iperps::keys::SettlementPricesTypeTag
+pub af_iperps::keys::SettlementPricesTypeTag::address: sui_sdk_types::address::Address
+impl core::convert::From<af_iperps::keys::SettlementPricesTypeTag> for sui_sdk_types::type_tag::StructTag
+pub fn sui_sdk_types::type_tag::StructTag::from(value: af_iperps::keys::SettlementPricesTypeTag) -> Self
+impl core::convert::From<af_iperps::keys::SettlementPricesTypeTag> for sui_sdk_types::type_tag::TypeTag
+pub fn sui_sdk_types::type_tag::TypeTag::from(value: af_iperps::keys::SettlementPricesTypeTag) -> Self
+impl core::convert::TryFrom<sui_sdk_types::type_tag::StructTag> for af_iperps::keys::SettlementPricesTypeTag
+pub type af_iperps::keys::SettlementPricesTypeTag::Error = af_move_type::StructTagError
+pub fn af_iperps::keys::SettlementPricesTypeTag::try_from(value: sui_sdk_types::type_tag::StructTag) -> core::result::Result<Self, Self::Error>
+impl core::convert::TryFrom<sui_sdk_types::type_tag::TypeTag> for af_iperps::keys::SettlementPricesTypeTag
+pub type af_iperps::keys::SettlementPricesTypeTag::Error = af_move_type::TypeTagError
+pub fn af_iperps::keys::SettlementPricesTypeTag::try_from(value: sui_sdk_types::type_tag::TypeTag) -> core::result::Result<Self, Self::Error>
+impl core::fmt::Display for af_iperps::keys::SettlementPricesTypeTag
+pub fn af_iperps::keys::SettlementPricesTypeTag::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::str::traits::FromStr for af_iperps::keys::SettlementPricesTypeTag
+pub type af_iperps::keys::SettlementPricesTypeTag::Err = af_move_type::ParseStructTagError
+pub fn af_iperps::keys::SettlementPricesTypeTag::from_str(s: &str) -> core::result::Result<Self, Self::Err>
 pub mod af_iperps::market
 pub struct af_iperps::market::MarketParams
 pub af_iperps::market::MarketParams::base_oracle_tolerance: u64
@@ -4765,4 +5027,5 @@ pub type af_iperps::PositionDf = sui_framework_sdk::dynamic_field::Field<af_iper
 pub type af_iperps::StopOrderTicket = af_iperps::stop_orders::StopOrderTicket<af_move_type::otw::Otw>
 pub type af_iperps::StopOrderTicketTypetag = af_iperps::stop_orders::StopOrderTicketTypeTag<af_move_type::otw::Otw>
 pub type af_iperps::Vault = af_iperps::clearing_house::Vault<af_move_type::otw::Otw>
+pub type af_iperps::VaultDf = sui_framework_sdk::dynamic_field::Field<af_iperps::keys::MarketVault, af_iperps::Vault>
 pub type af_iperps::VaultTypeTag = af_iperps::clearing_house::VaultTypeTag<af_move_type::otw::Otw>

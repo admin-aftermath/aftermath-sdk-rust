@@ -139,6 +139,16 @@ module perpetuals::errors {
     const NoPriceFeedForMarket: u64 = 1008;
     /// Cannot delete a proposal that already matured. It can only be committed.
     const ProposalAlreadyMatured: u64 = 1009;
+    /// Raised when an operation is performed while the market is paused
+    const MarketIsPaused: u64 = 1010;
+    /// Raised when trying to call `close_position_at_settlement_prices` while
+    /// the market is not paused
+    const MarketIsNotPaused: u64 = 1011;
+    /// Raised when trying to call `close_position_at_settlement_prices` while
+    /// before `close_market` has been called by admin
+    const MarketIsNotClosed: u64 = 1012;
+    /// Raised when Admin tries to resume a closed market
+    const MarketIsClosed: u64 = 1013;
 
     // Position  ---------------------------------------------------------------
 

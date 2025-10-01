@@ -45,6 +45,8 @@ pub type ClearingHouseTypeTag = self::clearing_house::ClearingHouseTypeTag<Otw>;
 pub type Vault = self::clearing_house::Vault<Otw>;
 pub type VaultTypeTag = self::clearing_house::VaultTypeTag<Otw>;
 
+/// Dynamic field storing a [`Vault`].
+pub type VaultDf = Field<self::keys::MarketVault, Vault>;
 /// Dynamic field storing a [`Position`].
 pub type PositionDf = Field<self::keys::Position, Position>;
 /// Dynamic field storing a leaf in a [`Map`] of [`Order`]s.
@@ -106,6 +108,7 @@ sui_pkg_sdk!(perpetuals {
         struct ClearingHouse<!phantom T> has key {
             id: UID,
             version: u64,
+            paused: bool,
             market_params: market::MarketParams,
             market_state: market::MarketState
         }
@@ -146,9 +149,16 @@ sui_pkg_sdk!(perpetuals {
 
         struct IntegratorInfo has copy, drop {
             integrator_address: address,
-            taker_fee: u256,
+            taker_fee: IFixed,
         }
 
+        /// Stores the proposed parameters for a position's custom fees
+        struct SettlementPrices has store {
+            /// Base asset's settlement price
+            base_price: IFixed,
+            /// Collateral asset's settlement price
+            collateral_price: IFixed,
+        }
         /// Used by clearing house to check margin when placing an order
         struct SessionHotPotato<!phantom T> {
             clearing_house: ClearingHouse<T>,
@@ -360,6 +370,30 @@ sui_pkg_sdk!(perpetuals {
         struct UpdatedClearingHouseVersion has copy, drop {
             ch_id: ID,
             version: u64
+        }
+
+        struct PausedMarket has copy, drop {
+            ch_id: ID,
+        }
+
+        struct ResumedMarket has copy, drop {
+            ch_id: ID,
+        }
+
+        struct ClosedMarket has copy, drop {
+            ch_id: ID,
+            base_settlement_price: u256,
+            collateral_settlement_price: u256
+        }
+
+        struct ClosedPositionAtSettlementPrices has copy, drop {
+            ch_id: ID,
+            account_id: u64,
+            pnl: IFixed,
+            base_asset_amount: IFixed,
+            quote_asset_amount: IFixed,
+            deallocated_collateral: u64,
+            bad_debt: IFixed
         }
 
         struct UpdatedPremiumTwap has copy, drop {
@@ -695,6 +729,9 @@ sui_pkg_sdk!(perpetuals {
         struct IntegratorVault has copy, drop, store {
             integrator_address: address,
         }
+
+        /// Key type for accessing  in clearing house.
+        struct SettlementPrices has copy, drop, store {}
 
         /// Key type for accessing market params in clearing house.
         struct Orderbook has copy, drop, store {}
