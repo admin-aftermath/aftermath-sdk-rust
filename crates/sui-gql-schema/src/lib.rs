@@ -1,4 +1,4 @@
-#![cfg_attr(all(doc, not(doctest)), feature(doc_auto_cfg))]
+#![cfg_attr(all(doc, not(doctest)), feature(doc_cfg))]
 
 //! Sui's GraphQL schema to use with `cynic`. Synchronized at `testnet-v1.42.0.`
 //!

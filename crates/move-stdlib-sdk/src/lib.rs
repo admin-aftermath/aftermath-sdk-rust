@@ -1,4 +1,4 @@
-#![cfg_attr(all(doc, not(doctest)), feature(doc_auto_cfg))]
+#![cfg_attr(all(doc, not(doctest)), feature(doc_cfg))]
 
 //! Move types for the core `std` Sui package located at "0x1" onchain.
 

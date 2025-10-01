@@ -1,4 +1,4 @@
-#![cfg_attr(all(doc, not(doctest)), feature(doc_auto_cfg))]
+#![cfg_attr(all(doc, not(doctest)), feature(doc_cfg))]
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 //

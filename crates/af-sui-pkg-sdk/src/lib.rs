@@ -1,4 +1,4 @@
-#![cfg_attr(all(doc, not(doctest)), feature(doc_auto_cfg))]
+#![cfg_attr(all(doc, not(doctest)), feature(doc_cfg))]
 
 //! Exports the [`sui_pkg_sdk!`](crate::sui_pkg_sdk) macro for generating Rust types from Move
 //! source code and implementing relevant [`af_move_type`] traits.

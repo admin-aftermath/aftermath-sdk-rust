@@ -1,4 +1,4 @@
-#![cfg_attr(all(doc, not(doctest)), feature(doc_auto_cfg))]
+#![cfg_attr(all(doc, not(doctest)), feature(doc_cfg))]
 
 //! Client for [Pyth Hermes] using [`reqwest`]. See [`PythClient`](crate::PythClient).
 //!
