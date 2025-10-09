@@ -4,7 +4,6 @@
 //!
 //! A lot of the types here are for compatibility with older APIs.
 
-use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 use sui_sdk_types::{
     GasPayment,
@@ -24,12 +23,17 @@ use crate::{Address, ObjectRef};
 // =================================================================================================
 
 /// The payload that gets sent to the full node as base64 BCS bytes.
-#[enum_dispatch(TransactionDataAPI)]
+#[deprecated(
+    note = "use `Transaction` instead, it has the same BCS serialization as `TransactionData`",
+    since = "0.15.0"
+)]
+#[allow(deprecated)]
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub enum TransactionData {
     V1(TransactionDataV1),
 }
 
+#[allow(deprecated)]
 impl TransactionData {
     /// Create a new transaction (V1).
     pub const fn v1(
@@ -71,6 +75,7 @@ impl TransactionData {
     }
 }
 
+#[allow(deprecated)]
 impl From<TransactionData> for Transaction {
     fn from(
         TransactionData::V1(TransactionDataV1 {
@@ -89,6 +94,7 @@ impl From<TransactionData> for Transaction {
     }
 }
 
+#[allow(deprecated)]
 impl From<Transaction> for TransactionData {
     fn from(
         Transaction {
@@ -102,6 +108,10 @@ impl From<Transaction> for TransactionData {
     }
 }
 
+#[deprecated(
+    note = "use `Transaction` instead, it has the same BCS serialization as `TransactionData`",
+    since = "0.15.0"
+)]
 #[derive(thiserror::Error, Debug)]
 pub enum TransactionFromBase64Error {
     #[error(transparent)]
@@ -114,6 +124,11 @@ pub enum TransactionFromBase64Error {
 //  TransactionDataV1
 // =================================================================================================
 
+#[deprecated(
+    note = "use `Transaction` instead, it has the same BCS serialization as `TransactionData`",
+    since = "0.15.0"
+)]
+#[allow(deprecated)]
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct TransactionDataV1 {
     pub kind: TransactionKind,
@@ -131,6 +146,10 @@ pub struct TransactionDataV1 {
 /// This type is here for backwards compatibility purposes. The new [`GasPayment`] uses
 /// [`ObjectReference`], which is incompatible with [`ObjectRef`] used across our internal Rust
 /// APIs (but still compatible at the serde level).
+#[deprecated(
+    note = "use `GasPayment` instead, it has the same BCS serialization as `GasData`",
+    since = "0.15.0"
+)]
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 pub struct GasData {
     pub payment: Vec<ObjectRef>,
@@ -139,6 +158,7 @@ pub struct GasData {
     pub budget: u64,
 }
 
+#[allow(deprecated)]
 impl From<GasData> for GasPayment {
     fn from(
         GasData {
@@ -160,6 +180,7 @@ impl From<GasData> for GasPayment {
     }
 }
 
+#[allow(deprecated)]
 impl From<GasPayment> for GasData {
     fn from(
         GasPayment {
@@ -288,7 +309,11 @@ pub struct ImmOwnedOrReceivingError;
 //  Traits
 // =================================================================================================
 
-#[enum_dispatch]
+#[deprecated(
+    note = "use `Transaction` instead, it has the same BCS serialization as `TransactionData`",
+    since = "0.15.0"
+)]
+#[allow(deprecated)]
 pub trait TransactionDataAPI {
     fn sender(&self) -> Address;
 
@@ -324,6 +349,7 @@ pub trait TransactionDataAPI {
     fn gas_data_mut(&mut self) -> &mut GasData;
 }
 
+#[allow(deprecated)]
 impl TransactionDataAPI for TransactionDataV1 {
     fn sender(&self) -> Address {
         self.sender
@@ -404,12 +430,92 @@ impl TransactionDataAPI for TransactionDataV1 {
     }
 }
 
+#[allow(deprecated)]
+impl TransactionDataAPI for TransactionData {
+    fn sender(&self) -> Address {
+        match self {
+            Self::V1(data) => data.sender(),
+        }
+    }
+    fn kind(&self) -> &TransactionKind {
+        match self {
+            Self::V1(data) => data.kind(),
+        }
+    }
+    fn kind_mut(&mut self) -> &mut TransactionKind {
+        match self {
+            Self::V1(data) => data.kind_mut(),
+        }
+    }
+    fn into_kind(self) -> TransactionKind {
+        match self {
+            Self::V1(data) => data.into_kind(),
+        }
+    }
+    fn gas_data(&self) -> &GasData {
+        match self {
+            Self::V1(data) => data.gas_data(),
+        }
+    }
+    fn gas_owner(&self) -> Address {
+        match self {
+            Self::V1(data) => data.gas_owner(),
+        }
+    }
+    fn gas(&self) -> &[ObjectRef] {
+        match self {
+            Self::V1(data) => data.gas(),
+        }
+    }
+    fn gas_price(&self) -> u64 {
+        match self {
+            Self::V1(data) => data.gas_price(),
+        }
+    }
+    fn gas_budget(&self) -> u64 {
+        match self {
+            Self::V1(data) => data.gas_budget(),
+        }
+    }
+    fn expiration(&self) -> &TransactionExpiration {
+        match self {
+            Self::V1(data) => data.expiration(),
+        }
+    }
+    fn is_system_tx(&self) -> bool {
+        match self {
+            Self::V1(data) => data.is_system_tx(),
+        }
+    }
+    fn is_genesis_tx(&self) -> bool {
+        match self {
+            Self::V1(data) => data.is_genesis_tx(),
+        }
+    }
+    fn is_end_of_epoch_tx(&self) -> bool {
+        match self {
+            Self::V1(data) => data.is_end_of_epoch_tx(),
+        }
+    }
+    fn is_sponsored_tx(&self) -> bool {
+        match self {
+            Self::V1(data) => data.is_sponsored_tx(),
+        }
+    }
+    fn gas_data_mut(&mut self) -> &mut GasData {
+        match self {
+            Self::V1(data) => data.gas_data_mut(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use test_strategy::proptest;
 
     use super::*;
 
+    #[allow(deprecated)]
     #[proptest]
     fn transaction_data_base64_roundtrip(transaction: sui_sdk_types::Transaction) {
         let original: TransactionData = transaction.into();

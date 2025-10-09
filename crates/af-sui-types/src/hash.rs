@@ -1,8 +1,10 @@
 use sui_sdk_types::hash::Hasher;
 use sui_sdk_types::{Intent, IntentAppId, IntentScope, IntentVersion, SigningDigest};
 
+#[allow(deprecated)]
 use crate::{Digest, TransactionData};
 
+#[allow(deprecated)]
 impl TransactionData {
     pub fn digest(&self) -> Digest {
         const SALT: &str = "TransactionData::";
@@ -18,6 +20,7 @@ fn type_digest<T: serde::Serialize>(salt: &str, ty: &T) -> Digest {
     Digest::new(hasher.finalize().into_inner())
 }
 
+#[allow(deprecated)]
 impl TransactionData {
     pub fn signing_digest(&self) -> SigningDigest {
         const INTENT: Intent = Intent {

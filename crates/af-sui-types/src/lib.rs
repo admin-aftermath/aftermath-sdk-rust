@@ -99,15 +99,17 @@ pub use self::sui::chain_identifier::ChainIdentifier;
 pub use self::sui::effects::TransactionEffectsAPI;
 #[doc(inline)]
 pub use self::sui::move_object_type::MoveObjectType;
+#[allow(deprecated)]
 #[doc(inline)]
 pub use self::sui::transaction::{
     GasData,
-    ObjectArg,
     TransactionData,
     TransactionDataAPI,
     TransactionDataV1,
     TransactionFromBase64Error,
 };
+#[doc(inline)]
+pub use self::sui::transaction::{ImmOwnedOrReceivingError, ObjectArg};
 
 // =============================================================================
 //  Aliases

@@ -1,15 +1,6 @@
 use std::collections::HashMap;
 
-use af_sui_types::{
-    Address as SuiAddress,
-    Address,
-    Object,
-    ObjectArg,
-    ObjectRef,
-    StructTag,
-    TransactionData,
-    Version,
-};
+use af_sui_types::{Address, Object, ObjectArg, ObjectRef, StructTag, Transaction, Version};
 // For `object_args!` macro only
 #[doc(hidden)]
 pub use bimap::BiMap;
@@ -96,7 +87,7 @@ pub trait GraphQlClientExt: GraphQlClient + Sized {
     /// The latest full [`Object`] contents with the possibility to filter by owner or object type.
     fn filtered_full_objects(
         &self,
-        owner: Option<SuiAddress>,
+        owner: Option<Address>,
         type_: Option<String>,
         page_size: Option<u32>,
     ) -> impl Stream<Item = Result<Object, Self>> + '_ {
@@ -136,7 +127,7 @@ pub trait GraphQlClientExt: GraphQlClient + Sized {
     }
 
     /// Genesis transaction of the Sui network instance.
-    async fn genesis_tx(&self) -> Result<TransactionData, Self> {
+    async fn genesis_tx(&self) -> Result<Transaction, Self> {
         genesis_tx::query(self)
     }
 
@@ -225,7 +216,7 @@ pub trait GraphQlClientExt: GraphQlClient + Sized {
     /// Get the raw Move value of a dynamic field's value.
     async fn owner_df_content(
         &self,
-        address: SuiAddress,
+        address: Address,
         raw_move_value: RawMoveValue,
         root_version: Option<u64>,
     ) -> Result<RawMoveValue, Self> {
@@ -235,7 +226,7 @@ pub trait GraphQlClientExt: GraphQlClient + Sized {
     /// Map of all keys to dynamic field values: [`RawMoveValue`] -> [`DynamicField`].
     async fn owner_df_contents(
         &self,
-        address: SuiAddress,
+        address: Address,
         root_version: Option<u64>,
         first: Option<i32>,
         after: Option<String>,
@@ -246,7 +237,7 @@ pub trait GraphQlClientExt: GraphQlClient + Sized {
     /// **Streamed** map of all keys to dynamic field values: [`RawMoveValue`] -> [`DynamicField`].
     async fn owner_df_contents_stream(
         &self,
-        address: SuiAddress,
+        address: Address,
         root_version: Option<u64>,
         page_size: Option<i32>,
     ) -> impl Stream<Item = Result<(RawMoveValue, DynamicField), Self>> + '_ {
@@ -256,7 +247,7 @@ pub trait GraphQlClientExt: GraphQlClient + Sized {
     /// Get the raw Move struct of a dynamic object field's value.
     async fn owner_dof_content(
         &self,
-        address: SuiAddress,
+        address: Address,
         raw_move_value: RawMoveValue,
         root_version: Option<u64>,
     ) -> Result<(ObjectKey, RawMoveStruct), Self> {
@@ -317,7 +308,7 @@ pub trait GraphQlClientExt: GraphQlClient + Sized {
     /// [`Argument::Gas`]: af_sui_types::Argument::Gas
     async fn gas_payment(
         &self,
-        sponsor: SuiAddress,
+        sponsor: Address,
         budget: u64,
         exclude: Vec<Address>,
     ) -> std::result::Result<Vec<ObjectRef>, GasPaymentError<Self::Error>> {

@@ -6,9 +6,9 @@ use crate::{GraphQlClient, GraphQlErrors, GraphQlResponseExt, schema};
 
 #[derive(cynic::QueryVariables, Clone, Debug)]
 pub struct Variables {
-    /// [TransactionData] struct that has been BCS-encoded and then Base64-encoded.
+    /// [Transaction] struct that has been BCS-encoded and then Base64-encoded.
     ///
-    /// [TransactionData]: af_sui_types::TransactionData
+    /// [Transaction]: sui_sdk_types::Transaction
     pub tx_bytes: String,
     /// A list of `flag || signature || pubkey` bytes, Base64-encoded.
     pub signatures: Vec<String>,
@@ -32,10 +32,10 @@ impl Mutation {
     /// transaction could not be finalized, returns the errors that prevented it, instead.
     ///
     /// Args:
-    /// - `tx_bytes`: [TransactionData] struct that has been BCS-encoded and then Base64-encoded.
+    /// - `tx_bytes`: [Transaction] struct that has been BCS-encoded and then Base64-encoded.
     /// - `signatures`: A list of `flag || signature || pubkey` bytes, Base64-encoded.
     ///
-    /// [TransactionData]: af_sui_types::TransactionData
+    /// [Transaction]: sui_sdk_types::Transaction
     #[allow(clippy::future_not_send)]
     pub async fn execute<Client: GraphQlClient>(
         client: &Client,

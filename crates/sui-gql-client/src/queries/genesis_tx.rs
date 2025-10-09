@@ -1,10 +1,10 @@
-use af_sui_types::TransactionData;
+use af_sui_types::Transaction;
 use graphql_extract::extract;
 
 use super::Error;
 use crate::{GraphQlClient, GraphQlResponseExt as _, scalars, schema};
 
-pub async fn query<C: GraphQlClient>(client: &C) -> Result<TransactionData, Error<C::Error>> {
+pub async fn query<C: GraphQlClient>(client: &C) -> Result<Transaction, Error<C::Error>> {
     let data = client
         .query::<Query, _>(Variables { id: Some(0) })
         .await
@@ -51,7 +51,7 @@ struct TransactionBlockConnection {
 
 #[derive(cynic::QueryFragment, Clone, Debug)]
 struct TransactionBlock {
-    bcs: Option<scalars::Base64Bcs<TransactionData>>,
+    bcs: Option<scalars::Base64Bcs<Transaction>>,
 }
 
 #[cfg(test)]
