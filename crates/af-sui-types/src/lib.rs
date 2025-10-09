@@ -127,7 +127,7 @@ pub type ObjectRef = (Address, Version, Digest);
 // =============================================================================
 
 /// Object ID of the onchain `Clock`.
-pub const CLOCK_ID: Address = Address::from_hex_unwrap(b"0x6");
+pub const CLOCK_ID: Address = Address::from_static("0x6");
 
 const OBJECT_DIGEST_DELETED_BYTE_VAL: u8 = 99;
 const OBJECT_DIGEST_WRAPPED_BYTE_VAL: u8 = 88;
@@ -250,7 +250,8 @@ pub use self::const_address::hex_address_bytes;
 pub use self::encoding::{decode_base64_default, encode_base64_default};
 
 /// `const`-ructor for Sui addresses.
-#[deprecated(note = "use `Address::from_hex_unwrap` instead", since = "0.14.0")]
+#[deprecated(note = "use `Address::from_static` instead", since = "0.14.0")]
 pub const fn address(bytes: &[u8]) -> Address {
-    Address::from_hex_unwrap(bytes)
+    #[allow(deprecated)]
+    Address::new(hex_address_bytes(bytes))
 }

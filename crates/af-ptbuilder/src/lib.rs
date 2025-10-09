@@ -437,7 +437,7 @@ impl Command {
 /// ```no_run
 /// # use sui_sdk_types::{Address, Input};
 /// let clock = Input::Shared {
-///     object_id: Address::from_hex_unwrap(b"0x6"),
+///     object_id: Address::from_static("0x6"),
 ///     initial_shared_version: 1,
 ///     mutable: false
 /// };
@@ -483,7 +483,7 @@ impl Command {
 /// ```no_run
 /// # use sui_sdk_types::{Address, Input};
 /// # let clock = Input::Shared {
-/// #     object_id: Address::from_hex_unwrap(b"0x6"),
+/// #     object_id: Address::from_static("0x6"),
 /// #     initial_shared_version: 1,
 /// #     mutable: false
 /// # };
@@ -519,14 +519,14 @@ impl Command {
 /// use af_ptbuilder::ptb;
 /// use sui_sdk_types::{Address, Input, TypeTag};
 ///
-/// let foo = Address::from_hex_unwrap(b"0xbeef");
+/// let foo = Address::from_static("0xbeef");
 /// let otw: TypeTag = "0x2::sui::SUI".parse()?;
 /// let registry = Input::Shared {
-///     object_id: Address::from_hex_unwrap(b"0xdeed"),
+///     object_id: Address::from_static("0xdeed"),
 ///     initial_shared_version: 1,
 ///     mutable: true,
 /// };
-/// let sender = Address::from_hex_unwrap(b"0xabcd");
+/// let sender = Address::from_static("0xabcd");
 ///
 /// ptb!(
 ///     package foo;

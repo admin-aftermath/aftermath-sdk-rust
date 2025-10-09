@@ -6,8 +6,8 @@ use sui_gql_client::reqwest::ReqwestClient;
 
 #[derive(Parser)]
 struct Args {
-    #[arg(long, default_value_t = Address::from_hex_unwrap(
-        b"0x9725155a70cf2d2241b8cc2fa8376809689312cabb4acaa5ca5ba47eaf4d611f",
+    #[arg(long, default_value_t = Address::from_static(
+        "0x9725155a70cf2d2241b8cc2fa8376809689312cabb4acaa5ca5ba47eaf4d611f",
     ))]
     package: Address,
 

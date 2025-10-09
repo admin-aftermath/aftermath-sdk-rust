@@ -229,21 +229,21 @@ impl ObjectArg {
     ///
     /// Only system transactions acquire mutable references to the clock.
     pub const CLOCK_IMM: Self = Self::SharedObject {
-        id: Address::from_hex_unwrap(b"0x6"),
+        id: Address::from_static("0x6"),
         initial_shared_version: 1,
         mutable: false,
     };
 
     /// Argument for transactions acquiring an immutable reference to the system state.
     pub const SYSTEM_STATE_IMM: Self = Self::SharedObject {
-        id: Address::from_hex_unwrap(b"0x5"),
+        id: Address::from_static("0x5"),
         initial_shared_version: 1,
         mutable: false,
     };
 
     /// Argument for transactions acquiring a mutable reference to the system state.
     pub const SYSTEM_STATE_MUT: Self = Self::SharedObject {
-        id: Address::from_hex_unwrap(b"0x5"),
+        id: Address::from_static("0x5"),
         initial_shared_version: 1,
         mutable: true,
     };
@@ -388,7 +388,7 @@ impl TransactionDataAPI for TransactionDataV1 {
             | TransactionKind::ConsensusCommitPrologueV4(_)
             | TransactionKind::AuthenticatorStateUpdate(_)
             | TransactionKind::RandomnessStateUpdate(_)
-            | TransactionKind::ProgrammableSystemTransaction(_)
+            // | TransactionKind::ProgrammableSystemTransaction(_)
             | TransactionKind::EndOfEpoch(_) => true,
             TransactionKind::ProgrammableTransaction(_) => false,
             _ => panic!("unknown TransactionKind variant"),

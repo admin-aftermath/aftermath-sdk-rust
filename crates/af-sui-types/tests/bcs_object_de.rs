@@ -83,8 +83,6 @@ fn object_deser() {
     let obj: Object = bcs::from_bytes(&bytes).unwrap();
     assert_eq!(
         obj.object_id(),
-        Address::from_hex_unwrap(
-            b"26a965f75a0bfde46e106e0d860fd656ce9ced5f61e6ad1dcfe80295a40d0a73"
-        )
+        Address::from_static("26a965f75a0bfde46e106e0d860fd656ce9ced5f61e6ad1dcfe80295a40d0a73")
     );
 }

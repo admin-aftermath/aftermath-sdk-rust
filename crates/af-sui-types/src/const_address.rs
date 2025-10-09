@@ -1,6 +1,6 @@
 /// 32-byte address from a hex byte vector, optionally `0x`-prefixed.
 #[deprecated(
-    note = "to create an `Address`, use `Address::from_hex_unwrap` instead",
+    note = "to create an `Address`, use `Address::from_static` instead",
     since = "0.14.0"
 )]
 pub const fn hex_address_bytes(bytes: &[u8]) -> [u8; 32] {

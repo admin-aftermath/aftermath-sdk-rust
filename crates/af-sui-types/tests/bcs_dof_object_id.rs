@@ -36,9 +36,8 @@ fn dof_object_id() {
 
     let id = Address::new(contents[(contents.len() - 32)..].try_into().unwrap());
 
-    let expected = Address::from_hex_unwrap(
-        b"be10f678ac8c024e45bf117000a230b2c7c36a7cba08d2e0e66fbcba1c7d5399",
-    );
+    let expected =
+        Address::from_static("be10f678ac8c024e45bf117000a230b2c7c36a7cba08d2e0e66fbcba1c7d5399");
     assert_eq!(id, expected);
 }
 

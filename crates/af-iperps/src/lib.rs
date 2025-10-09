@@ -28,8 +28,8 @@ pub use self::orderbook::Order;
 pub use self::position::Position;
 
 /// Package IDs of the perpetuals contract versions published on testnet, in order of its versions.
-pub const TESTNET_PACKAGE_VERSIONS: &[Address] = &[Address::from_hex_unwrap(
-    b"0x1fc71972750d0d81567183a8500befef94d7699aac76edffcca253fe541367fd",
+pub const TESTNET_PACKAGE_VERSIONS: &[Address] = &[Address::from_static(
+    "0x1fc71972750d0d81567183a8500befef94d7699aac76edffcca253fe541367fd",
 )];
 
 // Convenient aliases since these types will never exist onchain with a type argument other than an

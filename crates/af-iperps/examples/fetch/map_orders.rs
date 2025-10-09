@@ -13,8 +13,8 @@ struct Args {
     #[arg(long, default_value = "https://sui-testnet.mystenlabs.com/graphql")]
     rpc: String,
 
-    #[arg(long, default_value_t = Address::from_hex_unwrap(
-        b"0xa8d5e1bf15d606b589a8452e6864841bb7e5a56d031f77a387b2177dd32a1fcd",
+    #[arg(long, default_value_t = Address::from_static(
+        "0xa8d5e1bf15d606b589a8452e6864841bb7e5a56d031f77a387b2177dd32a1fcd",
     ))]
     map: Address,
 

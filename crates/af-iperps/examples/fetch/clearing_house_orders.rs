@@ -11,8 +11,8 @@ struct Args {
     #[arg(long, default_value = "https://sui-testnet.mystenlabs.com/graphql")]
     rpc: String,
 
-    #[arg(long, default_value_t = Address::from_hex_unwrap(
-        b"0x4264c07a42f9d002c1244e43a1f0fa21c49e4a25c7202c597b8476ef6bb57113",
+    #[arg(long, default_value_t = Address::from_static(
+        "0x4264c07a42f9d002c1244e43a1f0fa21c49e4a25c7202c597b8476ef6bb57113",
     ))]
     ch: Address,
 
