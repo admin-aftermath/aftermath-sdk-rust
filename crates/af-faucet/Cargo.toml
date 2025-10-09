@@ -30,3 +30,4 @@ workspace = true
 # https://rust-lang.github.io/rfcs/3516-public-private-dependencies.html
 af-sui-pkg-sdk    = { version = "0.11.1", public = true, path = "../af-sui-pkg-sdk" }
 sui-framework-sdk = { version = "0.13.1", public = true, path = "../sui-framework-sdk" }
+sui-sdk-types     = { version = "0.0.8", public = true }
