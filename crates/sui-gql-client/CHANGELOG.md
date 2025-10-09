@@ -38,6 +38,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.22.0](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/sui-gql-client-v0.21.1...sui-gql-client-v0.22.0)
+
+### ⛰️ Features
+
+- *(deps)* [**breaking**] Update sui-sdk-types version - ([e1e4c4f](https://github.com/AftermathFinance/aftermath-sdk-rust/commit/e1e4c4f97b045e7ab53045039950fd8665b0c5cd))
+- [**breaking**] Deprecate TransactionData - ([464c1f9](https://github.com/AftermathFinance/aftermath-sdk-rust/commit/464c1f992ac5d21c2160902dc7b973916ca52572))
+
+
 ## [0.21.1](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/sui-gql-client-v0.21.0...sui-gql-client-v0.21.1)
 
 ### ⚙️ Miscellaneous Tasks

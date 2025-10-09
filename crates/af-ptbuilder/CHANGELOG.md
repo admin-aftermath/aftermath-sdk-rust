@@ -23,6 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [10.0.0](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/af-ptbuilder-v9.0.1...af-ptbuilder-v10.0.0)
+
+### ⛰️ Features
+
+- *(deps)* [**breaking**] Update sui-sdk-types version - ([e1e4c4f](https://github.com/AftermathFinance/aftermath-sdk-rust/commit/e1e4c4f97b045e7ab53045039950fd8665b0c5cd))
+
+
 ## [9.0.1](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/af-ptbuilder-v9.0.0...af-ptbuilder-v9.0.1)
 
 ### ⚙️ Miscellaneous Tasks

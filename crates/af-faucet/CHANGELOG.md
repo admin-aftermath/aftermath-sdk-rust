@@ -23,6 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/af-faucet-v0.14.1...af-faucet-v0.15.0)
+
+### ⛰️ Features
+
+- *(deps)* [**breaking**] Dependent on sui-sdk-types directly to help bot - ([70c4e9e](https://github.com/AftermathFinance/aftermath-sdk-rust/commit/70c4e9ed063a58a93433101650b895168bc376fa))
+
+
 ## [0.14.1](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/af-faucet-v0.14.0...af-faucet-v0.14.1)
 
 ### ⚙️ Miscellaneous Tasks
