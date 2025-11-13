@@ -30,6 +30,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.0](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/sui-jsonrpc-v0.22.0...sui-jsonrpc-v0.23.0)
+
+### ⛰️ Features
+
+- *(deps)* [**breaking**] Update Sui SDK to 0.1; remove deprecated stuff - ([df1ed4b](https://github.com/AftermathFinance/aftermath-sdk-rust/commit/df1ed4b1b09b82cbe6995495cfa8feb96367df5d))
+
+
 ## [0.22.0](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/sui-jsonrpc-v0.21.1...sui-jsonrpc-v0.22.0)
 
 ### ⛰️ Features

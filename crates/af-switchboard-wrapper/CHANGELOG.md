@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.31](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/af-switchboard-wrapper-v0.0.30...af-switchboard-wrapper-v0.0.31)
+
+### ⛰️ Features
+
+- *(deps)* [**breaking**] Update Sui SDK to 0.1; remove deprecated stuff - ([df1ed4b](https://github.com/AftermathFinance/aftermath-sdk-rust/commit/df1ed4b1b09b82cbe6995495cfa8feb96367df5d))
+
+
 ## [0.0.30](https://github.com/AftermathFinance/aftermath-sdk-rust/compare/af-switchboard-wrapper-v0.0.29...af-switchboard-wrapper-v0.0.30)
 
 ### ⛰️ Features
