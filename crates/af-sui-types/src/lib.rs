@@ -79,10 +79,7 @@ pub use sui_sdk_types::{
     Version,
 };
 
-mod const_address;
 pub mod encoding;
-#[cfg(feature = "hash")]
-mod hash;
 /// Aftermath's versions of [`move_core_types`](https://github.com/MystenLabs/sui/tree/main/external-crates/move/crates/move-core-types).
 pub(crate) mod move_core;
 /// Aftermath's versions of [`sui_types`](https://mystenlabs.github.io/sui/sui_types/index.html).
@@ -99,15 +96,6 @@ pub use self::sui::chain_identifier::ChainIdentifier;
 pub use self::sui::effects::TransactionEffectsAPI;
 #[doc(inline)]
 pub use self::sui::move_object_type::MoveObjectType;
-#[allow(deprecated)]
-#[doc(inline)]
-pub use self::sui::transaction::{
-    GasData,
-    TransactionData,
-    TransactionDataAPI,
-    TransactionDataV1,
-    TransactionFromBase64Error,
-};
 #[doc(inline)]
 pub use self::sui::transaction::{ImmOwnedOrReceivingError, ObjectArg};
 
@@ -242,18 +230,42 @@ const fn builtin_address(suffix: u16) -> Address {
 }
 
 // =============================================================================
+//  StructTagHelper
+// =============================================================================
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct StructTagHelper {
+    pub address: Address,
+    pub module: Identifier,
+    pub name: Identifier,
+    pub type_params: Vec<TypeTag>,
+}
+
+impl From<StructTagHelper> for StructTag {
+    fn from(helper: StructTagHelper) -> Self {
+        Self::new(
+            helper.address,
+            helper.module,
+            helper.name,
+            helper.type_params,
+        )
+    }
+}
+
+impl From<&StructTag> for StructTagHelper {
+    fn from(struct_tag: &StructTag) -> Self {
+        Self {
+            address: *struct_tag.address(),
+            module: struct_tag.module().clone(),
+            name: struct_tag.name().clone(),
+            type_params: struct_tag.type_params().to_vec(),
+        }
+    }
+}
+
+// =============================================================================
 //  Functions
 // =============================================================================
 
-#[allow(deprecated)]
-#[doc(inline)]
-pub use self::const_address::hex_address_bytes;
 #[doc(inline)]
 pub use self::encoding::{decode_base64_default, encode_base64_default};
-
-/// `const`-ructor for Sui addresses.
-#[deprecated(note = "use `Address::from_static` instead", since = "0.14.0")]
-pub const fn address(bytes: &[u8]) -> Address {
-    #[allow(deprecated)]
-    Address::new(hex_address_bytes(bytes))
-}

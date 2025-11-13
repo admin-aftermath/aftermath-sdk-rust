@@ -33,7 +33,7 @@ pub enum Error<C: std::error::Error> {
     OwnerDfContent(QueryError<C>),
 
     #[error("BCS De/Ser: {0}")]
-    Bcs(#[from] bcs::Error),
+    Bcs(#[from] sui_sdk_types::bcs::Error),
 
     #[error(transparent)]
     FromRawType(#[from] af_move_type::FromRawTypeError),

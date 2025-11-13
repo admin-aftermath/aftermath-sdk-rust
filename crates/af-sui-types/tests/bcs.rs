@@ -1,5 +1,5 @@
-use af_sui_types::{Address, decode_base64_default};
-use sui_sdk_types::{Object, Transaction};
+use sui_sdk_types::bcs::FromBcs;
+use sui_sdk_types::{Address, Object, Transaction};
 
 /// This showcases how to obtain a DOF's object ID from its wrapper `Field`'s BCS bytes.
 ///
@@ -29,8 +29,7 @@ I5tQ6pcJOkSOHS4T13VPNU4s3egbO9eNm0QvhD2eKyMAk5FvxFwAKIwssfDany6CNLg5m+8uhx9U5m+E
 x8NqfLoI0uDmb7y6HH1TmQHy9nUHfgKdnelfUVVLaXhnO9c3TRsbhJYZWZty27S08SD8V9YtW3Kj2PSMciD4PhTecIJB9EbuaZ+\
 NB4i8B6YCC9BXLQAAAAAA";
 
-    let bytes = decode_base64_default(BASE64_BCS).unwrap();
-    let wrapper: Object = bcs::from_bytes(&bytes).unwrap();
+    let wrapper = Object::from_bcs_base64(BASE64_BCS).unwrap();
     let move_object = wrapper.as_struct().expect("Not a Move object");
     let contents = &move_object.contents();
     println!("{wrapper:#?}");
@@ -68,16 +67,14 @@ NB4i8B6YCC9BXLQAAAAAA";
 fn transaction_deser() {
     const BASE64_BCS: &str = "AAUCAlICAAAAAAAAdACtAAAAAAAAUwIAAAAAAABGAAAAAAAAAIDnfFEREwAAGB4InlYEAAAgoP6XPhAAAGAJiQEqAAAAU49m/5MBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAA=";
 
-    let bytes = decode_base64_default(BASE64_BCS).unwrap();
-    let _: Transaction = bcs::from_bytes(&bytes).unwrap();
+    let _ = Transaction::from_bcs_base64(BASE64_BCS).unwrap();
 }
 
 #[test]
 fn object_deser() {
     const BASE64_BCS: &str = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAg1keW5hbWljX2ZpZWxkBUZpZWxkAgIHt638CGj0NHfXLk46bwiSFJ2G+/VXM06NdPq66jFPqq4Lb3JkZXJlZF9tYXAETGVhZgEHt638CGj0NHfXLk46bwiSFJ2G+/VXM06NdPq66jFPqq4Jb3JkZXJib29rBU9yZGVyAADYBYEBAAAAADEmqWX3Wgv95G4Qbg2GD9ZWzpztX2HmrR3P6AKVpA0KcwEAAAAAAACAAAAAAAAAAAAAAdOoZhJMtfvS8ektsEaUhtssBIX2A5XXYxJTL4wvLIUjICMQNMtGMC8YCN5pxm7P87gUyUgRyx8umoFxNl/ygjMLIBgiAAAAAAA=";
 
-    let bytes = decode_base64_default(BASE64_BCS).unwrap();
-    let obj: Object = bcs::from_bytes(&bytes).unwrap();
+    let obj = Object::from_bcs_base64(BASE64_BCS).unwrap();
     insta::assert_snapshot!(obj.object_id(), @"0x26a965f75a0bfde46e106e0d860fd656ce9ced5f61e6ad1dcfe80295a40d0a73");
     assert_eq!(obj.version(), 25232856);
     insta::assert_snapshot!(obj.digest().to_base58(), @"F8wHxvPV3CuKLm25wb7B4xL64stTGChfjJpj8RYSyWHX");

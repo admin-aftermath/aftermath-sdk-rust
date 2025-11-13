@@ -1,5 +1,6 @@
-use af_sui_types::{Address, decode_base64_default};
-use sui_sdk_types::Object;
+use sui_sdk_types::bcs::FromBcs;
+use sui_sdk_types::{Address, Object};
+
 // query Transactions($tx_cursor: String) {
 //   transactionBlocks(
 //     filter: {
@@ -79,8 +80,7 @@ const BASE64_BCS: &str = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAg1keW5hbW
 
 #[test]
 fn object_deser() {
-    let bytes = decode_base64_default(BASE64_BCS).unwrap();
-    let obj: Object = bcs::from_bytes(&bytes).unwrap();
+    let obj = Object::from_bcs_base64(BASE64_BCS).unwrap();
     assert_eq!(
         obj.object_id(),
         Address::from_static("26a965f75a0bfde46e106e0d860fd656ce9ced5f61e6ad1dcfe80295a40d0a73")

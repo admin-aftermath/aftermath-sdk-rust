@@ -554,16 +554,11 @@ impl MoveObjectType {
 }
 
 impl From<StructTag> for MoveObjectType {
-    fn from(mut s: StructTag) -> Self {
+    fn from(s: StructTag) -> Self {
         Self(if s == StructTag::gas_coin() {
             MoveObjectType_::GasCoin
-        } else if s.is_coin().is_some() {
-            // unwrap safe because a coin has exactly one type parameter
-            MoveObjectType_::Coin(
-                s.type_params
-                    .pop()
-                    .expect("Coin should have exactly one type parameter"),
-            )
+        } else if let Some(coin_type) = s.is_coin() {
+            MoveObjectType_::Coin(coin_type.clone())
         } else if s == StructTag::staked_sui() {
             MoveObjectType_::StakedSui
         } else {
@@ -976,8 +971,8 @@ impl SuiMoveObject for SuiRawMoveObject {
 }
 
 impl SuiRawMoveObject {
-    pub fn deserialize<'a, T: Deserialize<'a>>(&'a self) -> Result<T, bcs::Error> {
-        bcs::from_bytes(self.bcs_bytes.as_slice())
+    pub fn deserialize<'a, T: Deserialize<'a>>(&'a self) -> Result<T, sui_sdk_types::bcs::Error> {
+        sui_sdk_types::bcs::FromBcs::from_bcs(&self.bcs_bytes)
     }
 }
 

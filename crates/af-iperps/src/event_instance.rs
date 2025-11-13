@@ -32,7 +32,7 @@ macro_rules! event_instance {
 
         impl $Enum {
             pub fn new(type_: StructTag, bcs: impl AsRef<[u8]>) -> Result<Self, FromRawEventError> {
-                let name = type_.name.to_string();
+                let name = type_.name().to_string();
                 let name_str = name.as_str();
                 Ok(match name_str {
                     $(

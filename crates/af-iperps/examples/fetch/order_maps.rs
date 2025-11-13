@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
     let Args { rpc, ch } = Args::parse();
     let client = ReqwestClient::new(reqwest::Client::default(), rpc.to_owned());
 
-    let package = client.object_type(ch).await?.address;
+    let package = *client.object_type(ch).await?.address();
     let OrderMaps {
         orderbook,
         asks,

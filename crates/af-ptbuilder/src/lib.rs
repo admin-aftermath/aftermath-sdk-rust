@@ -22,6 +22,7 @@ pub use sui_sdk_types::MoveCall;
 use sui_sdk_types::ProgrammableTransaction;
 #[doc(no_inline)]
 pub use sui_sdk_types::TypeTag;
+use sui_sdk_types::bcs::ToBcs;
 
 #[cfg(test)]
 mod tests;
@@ -31,7 +32,7 @@ pub type Result<T> = ::std::result::Result<T, Error>;
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("Serializing to BCS: {0}")]
-    Bcs(#[from] bcs::Error),
+    Bcs(#[from] sui_sdk_types::bcs::Error),
 
     #[error("invariant violation! object has pure argument")]
     ObjInvariantViolation,
@@ -80,12 +81,12 @@ impl ProgrammableTransactionBuilder {
     ///
     /// May not create a new PTB input if a previous one already has the same contents.
     pub fn pure<T: Serialize + ?Sized>(&mut self, value: &T) -> Result<Argument> {
-        Ok(self.pure_bytes(bcs::to_bytes(value)?, false))
+        Ok(self.pure_bytes(value.to_bcs()?, false))
     }
 
     /// Like [`Self::pure`] but forces a separate input entry
     pub fn force_separate_pure<T: Serialize>(&mut self, value: T) -> Result<Argument> {
-        Ok(self.pure_bytes(bcs::to_bytes(&value)?, true))
+        Ok(self.pure_bytes(value.to_bcs()?, true))
     }
 
     /// Adds a pure argument to the PTB.

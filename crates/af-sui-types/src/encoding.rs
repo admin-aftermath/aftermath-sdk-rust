@@ -7,6 +7,7 @@ use base64::engine::GeneralPurpose;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::base64::Base64;
 use serde_with::{DeserializeAs, SerializeAs, formats};
+use sui_sdk_types::bcs::{FromBcs, ToBcs};
 
 /// Default encoder for Base64 data.
 pub(crate) const BASE64_DEFAULT_ENGINE: GeneralPurpose = GeneralPurpose::new(
@@ -50,7 +51,7 @@ where
         D: Deserializer<'de>,
     {
         let bytes: Vec<u8> = Base64::<Alphabet, Padding>::deserialize_as(deserializer)?;
-        bcs::from_bytes(&bytes).map_err(serde::de::Error::custom)
+        FromBcs::from_bcs(&bytes).map_err(serde::de::Error::custom)
     }
 }
 
@@ -63,7 +64,7 @@ where
     where
         S: Serializer,
     {
-        let bytes = bcs::to_bytes(source).map_err(serde::ser::Error::custom)?;
+        let bytes = source.to_bcs().map_err(serde::ser::Error::custom)?;
         Base64::<Alphabet, formats::Padded>::serialize_as(&bytes, serializer)
     }
 }
@@ -77,7 +78,7 @@ where
     where
         S: Serializer,
     {
-        let bytes = bcs::to_bytes(source).map_err(serde::ser::Error::custom)?;
+        let bytes = source.to_bcs().map_err(serde::ser::Error::custom)?;
         Base64::<Alphabet, formats::Unpadded>::serialize_as(&bytes, serializer)
     }
 }

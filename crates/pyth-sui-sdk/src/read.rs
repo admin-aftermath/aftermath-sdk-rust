@@ -1,8 +1,9 @@
 //! JSON-RPC methods for querying Pyth on-chain data.
 use af_ptbuilder::ptb;
-use af_sui_types::{Address as SuiAddress, ObjectArg, TransactionKind, encode_base64_default};
+use af_sui_types::{Address as SuiAddress, ObjectArg, TransactionKind};
 use sui_framework_sdk::object::ID;
 use sui_jsonrpc::api::WriteApiClient;
+use sui_sdk_types::bcs::{FromBcs, ToBcs};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -15,7 +16,7 @@ pub enum Error {
     #[error(transparent)]
     FromHex(#[from] hex::FromHexError),
     #[error("Serializing to BCS: {0}")]
-    Bcs(#[from] bcs::Error),
+    Bcs(#[from] sui_sdk_types::bcs::Error),
     #[error("DevInspectResults.results is None")]
     DevInspectResults,
 }
@@ -45,9 +46,7 @@ where
     );
 
     let mut results = {
-        let tx_bytes = encode_base64_default(bcs::to_bytes(
-            &TransactionKind::ProgrammableTransaction(inspect_tx),
-        )?);
+        let tx_bytes = TransactionKind::ProgrammableTransaction(inspect_tx).to_bcs_base64()?;
         let resp = client
             .dev_inspect_transaction_block(
                 SuiAddress::ZERO, // doesn't matter
@@ -62,6 +61,6 @@ where
     let sui_exec_result = results.swap_remove(0);
     let mut return_values = sui_exec_result.return_values;
     let (bytes, _sui_type_tag) = return_values.swap_remove(0);
-    let id: ID = bcs::from_bytes(&bytes)?;
+    let id = ID::from_bcs(&bytes)?;
     Ok(id.bytes)
 }

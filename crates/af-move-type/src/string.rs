@@ -52,35 +52,29 @@ impl TryFrom<StructTag> for StringTypeTag {
 
     fn try_from(value: StructTag) -> Result<Self, Self::Error> {
         use StructTagError::*;
-        let StructTag {
-            address,
-            module,
-            name,
-            type_params,
-        } = value;
         let expected = String::struct_tag();
-        if address != expected.address {
+        if *value.address() != *expected.address() {
             return Err(Address {
-                expected: expected.address,
-                got: address,
+                expected: *expected.address(),
+                got: *value.address(),
             });
         }
-        if module != expected.module {
+        if value.module() != expected.module() {
             return Err(Module {
-                expected: expected.module,
-                got: module,
+                expected: expected.module().clone(),
+                got: value.module().clone(),
             });
         }
-        if name != expected.name {
+        if value.name() != expected.name() {
             return Err(Name {
-                expected: expected.name,
-                got: name,
+                expected: expected.name().clone(),
+                got: value.name().clone(),
             });
         }
-        if !type_params.is_empty() {
+        if !value.type_params().is_empty() {
             return Err(TypeParams(TypeParamsError::Number {
                 expected: 0,
-                got: type_params.len(),
+                got: value.type_params().len(),
             }));
         }
         Ok(Self)

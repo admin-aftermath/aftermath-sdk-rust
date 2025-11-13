@@ -36,11 +36,11 @@ impl fmt::Display for MoveObjectType {
 }
 
 impl MoveObjectType {
-    pub const fn address(&self) -> Address {
+    pub fn address(&self) -> Address {
         match &self.0 {
             MoveObjectType_::GasCoin | MoveObjectType_::Coin(_) => SUI_FRAMEWORK_ADDRESS,
             MoveObjectType_::StakedSui => SUI_SYSTEM_ADDRESS,
-            MoveObjectType_::Other(s) => s.address,
+            MoveObjectType_::Other(s) => *s.address(),
         }
     }
 
@@ -48,7 +48,7 @@ impl MoveObjectType {
         match &self.0 {
             MoveObjectType_::GasCoin | MoveObjectType_::Coin(_) => COIN_MODULE_NAME,
             MoveObjectType_::StakedSui => STAKING_POOL_MODULE_NAME,
-            MoveObjectType_::Other(s) => s.module.borrow(),
+            MoveObjectType_::Other(s) => s.module().borrow(),
         }
     }
 
@@ -56,7 +56,7 @@ impl MoveObjectType {
         match &self.0 {
             MoveObjectType_::GasCoin | MoveObjectType_::Coin(_) => COIN_STRUCT_NAME,
             MoveObjectType_::StakedSui => STAKED_SUI_STRUCT_NAME,
-            MoveObjectType_::Other(s) => s.name.borrow(),
+            MoveObjectType_::Other(s) => s.name().borrow(),
         }
     }
 
@@ -65,7 +65,7 @@ impl MoveObjectType {
             MoveObjectType_::GasCoin => vec![Gas::type_tag()],
             MoveObjectType_::StakedSui => vec![],
             MoveObjectType_::Coin(inner) => vec![inner.clone()],
-            MoveObjectType_::Other(s) => s.type_params.clone(),
+            MoveObjectType_::Other(s) => s.type_params().to_vec(),
         }
     }
 
@@ -74,7 +74,7 @@ impl MoveObjectType {
             MoveObjectType_::GasCoin => vec![Gas::type_tag()],
             MoveObjectType_::StakedSui => vec![],
             MoveObjectType_::Coin(inner) => vec![inner],
-            MoveObjectType_::Other(s) => s.type_params,
+            MoveObjectType_::Other(s) => s.type_params().to_vec(),
         }
     }
 
@@ -129,9 +129,9 @@ impl MoveObjectType {
                 false
             }
             MoveObjectType_::Other(s) => {
-                s.address == SUI_FRAMEWORK_ADDRESS
-                    && Borrow::<IdentStr>::borrow(&s.module) == COIN_MODULE_NAME
-                    && Borrow::<IdentStr>::borrow(&s.name) == COIN_METADATA_STRUCT_NAME
+                *s.address() == SUI_FRAMEWORK_ADDRESS
+                    && Borrow::<IdentStr>::borrow(s.module()) == COIN_MODULE_NAME
+                    && Borrow::<IdentStr>::borrow(s.name()) == COIN_METADATA_STRUCT_NAME
             }
         }
     }
@@ -142,9 +142,9 @@ impl MoveObjectType {
                 false
             }
             MoveObjectType_::Other(s) => {
-                s.address == SUI_FRAMEWORK_ADDRESS
-                    && Borrow::<IdentStr>::borrow(&s.module) == COIN_MODULE_NAME
-                    && Borrow::<IdentStr>::borrow(&s.name) == COIN_TREASURE_CAP_NAME
+                *s.address() == SUI_FRAMEWORK_ADDRESS
+                    && Borrow::<IdentStr>::borrow(s.module()) == COIN_MODULE_NAME
+                    && Borrow::<IdentStr>::borrow(s.name()) == COIN_TREASURE_CAP_NAME
             }
         }
     }
@@ -173,9 +173,9 @@ impl MoveObjectType {
                 false
             }
             MoveObjectType_::Other(s) => {
-                s.address == SUI_FRAMEWORK_ADDRESS
-                    && Borrow::<IdentStr>::borrow(&s.module) == DYNAMIC_FIELD_MODULE_NAME
-                    && Borrow::<IdentStr>::borrow(&s.name) == DYNAMIC_FIELD_FIELD_STRUCT_NAME
+                *s.address() == SUI_FRAMEWORK_ADDRESS
+                    && Borrow::<IdentStr>::borrow(s.module()) == DYNAMIC_FIELD_MODULE_NAME
+                    && Borrow::<IdentStr>::borrow(s.name()) == DYNAMIC_FIELD_FIELD_STRUCT_NAME
             }
         }
     }
@@ -191,25 +191,20 @@ impl MoveObjectType {
             MoveObjectType_::GasCoin | MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) => {
                 None
             }
-            MoveObjectType_::Other(s) => (s.address == SUI_FRAMEWORK_ADDRESS
-                && Borrow::<IdentStr>::borrow(&s.module) == DYNAMIC_FIELD_MODULE_NAME
-                && Borrow::<IdentStr>::borrow(&s.name) == DYNAMIC_FIELD_FIELD_STRUCT_NAME)
-                .then(|| (&s.type_params[0], &s.type_params[1])),
+            MoveObjectType_::Other(s) => (*s.address() == SUI_FRAMEWORK_ADDRESS
+                && Borrow::<IdentStr>::borrow(s.module()) == DYNAMIC_FIELD_MODULE_NAME
+                && Borrow::<IdentStr>::borrow(s.name()) == DYNAMIC_FIELD_FIELD_STRUCT_NAME)
+                .then(|| (&s.type_params()[0], &s.type_params()[1])),
         }
     }
 }
 
 impl From<StructTag> for MoveObjectType {
-    fn from(mut s: StructTag) -> Self {
+    fn from(s: StructTag) -> Self {
         Self(if is_gas_coin(&s) {
             MoveObjectType_::GasCoin
-        } else if s.is_coin().is_some() {
-            // unwrap safe because a coin has exactly one type parameter
-            MoveObjectType_::Coin(
-                s.type_params
-                    .pop()
-                    .expect("Coin should have exactly one type parameter"),
-            )
+        } else if let Some(coin_type) = s.is_coin() {
+            MoveObjectType_::Coin(coin_type.clone())
         } else if s == StructTag::staked_sui() {
             MoveObjectType_::StakedSui
         } else {

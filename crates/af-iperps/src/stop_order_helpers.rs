@@ -9,11 +9,11 @@ use crate::order_helpers::{OrderType, Side};
 
 pub trait StopOrderTicketDetails {
     /// Pure transaction input to use when calling `create_stop_order_ticket`.
-    fn encrypted_details(&self, salt: Vec<u8>) -> bcs::Result<Vec<u8>>
+    fn encrypted_details(&self, salt: Vec<u8>) -> Result<Vec<u8>, sui_sdk_types::bcs::Error>
     where
         Self: serde::Serialize,
     {
-        let mut bytes = bcs::to_bytes(self)?;
+        let mut bytes = sui_sdk_types::bcs::ToBcs::to_bcs(&self)?;
         bytes.extend(salt);
         Ok(Blake2b256::digest(bytes).to_vec())
     }

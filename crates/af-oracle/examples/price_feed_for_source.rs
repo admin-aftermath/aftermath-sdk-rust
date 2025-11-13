@@ -32,7 +32,7 @@ async fn main() -> Result<()> {
     } = Args::parse();
     let client = ReqwestClient::new_default(rpc);
 
-    let package = client.object_type(pfs).await?.address;
+    let package = *client.object_type(pfs).await?.address();
     if let Some(feed) = client
         .price_feed_for_source(package, pfs, source_wrapper_id)
         .await?

@@ -129,6 +129,7 @@ fn impl_type_tag(type_tag_params: TypeTagParameters, thecrate: Path) -> TokenStr
     let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
     let type_tag_type = quote!(#thecrate::external::TypeTag);
     let struct_tag_type = quote!(#thecrate::external::StructTag);
+    let struct_tag_helper_type = quote!(#thecrate::external::StructTagHelper);
     let result_type = quote!(::std::result::Result);
     let derive_ord = if has_type_params(&generics) {
         quote! {
@@ -173,10 +174,11 @@ fn impl_type_tag(type_tag_params: TypeTagParameters, thecrate: Path) -> TokenStr
                 let #ident {
                     #(#attr_idents),*
                 } = value;
-                Self {
+                let helper = #struct_tag_helper_type {
                     #(#struct_tag_var_attrs,)*
                     #(#struct_tag_const_declarations),*
-                }
+                };
+                Self::from(helper)
             }
         }
 
@@ -203,12 +205,13 @@ fn impl_type_tag(type_tag_params: TypeTagParameters, thecrate: Path) -> TokenStr
 
             fn try_from(value: #struct_tag_type) -> #result_type<Self, Self::Error> {
                 use #thecrate::StructTagError::*;
-                let #struct_tag_type {
+                let helper = #struct_tag_helper_type::from(&value);
+                let #struct_tag_helper_type {
                     address,
                     module,
                     name,
                     mut type_params,
-                } = value;
+                } = helper;
                 #struct_tag_consts_checks
                 #unpack_type_params
                 #result_type::Ok(Self {

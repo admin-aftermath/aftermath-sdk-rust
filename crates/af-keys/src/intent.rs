@@ -11,6 +11,7 @@ use eyre::eyre;
 use fastcrypto::encoding::decode_bytes_hex;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use sui_sdk_types::bcs::FromBcs;
 
 /// The version here is to distinguish between signing different versions of the struct
 /// or enum. Serialized output between two different versions of the same struct/enum
@@ -24,7 +25,7 @@ pub enum IntentVersion {
 impl TryFrom<u8> for IntentVersion {
     type Error = eyre::Report;
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        bcs::from_bytes(&[value]).map_err(|_| eyre!("Invalid IntentVersion"))
+        FromBcs::from_bcs(&[value]).map_err(|_| eyre!("Invalid IntentVersion"))
     }
 }
 
@@ -44,7 +45,7 @@ pub enum AppId {
 impl TryFrom<u8> for AppId {
     type Error = eyre::Report;
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        bcs::from_bytes(&[value]).map_err(|_| eyre!("Invalid AppId"))
+        FromBcs::from_bcs(&[value]).map_err(|_| eyre!("Invalid AppId"))
     }
 }
 
@@ -68,7 +69,7 @@ pub enum IntentScope {
 impl TryFrom<u8> for IntentScope {
     type Error = eyre::Report;
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        bcs::from_bytes(&[value]).map_err(|_| eyre!("Invalid IntentScope"))
+        FromBcs::from_bcs(&[value]).map_err(|_| eyre!("Invalid IntentScope"))
     }
 }
 

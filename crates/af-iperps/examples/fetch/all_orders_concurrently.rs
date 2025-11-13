@@ -44,7 +44,7 @@ async fn main() -> Result<()> {
     let ch_obj = client.full_object(ch, None).await?;
     let ch_struct = ch_obj.as_struct().ok_or_eyre("Not a Move struct")?;
     let OrderMaps { asks, bids, .. } = client
-        .order_maps(ch_struct.object_type().address, ch)
+        .order_maps(*ch_struct.object_type().address(), ch)
         .await?;
     let ch_inst = MoveInstance::<ClearingHouse>::from_raw_struct(
         ch_struct.object_type().clone().into(),

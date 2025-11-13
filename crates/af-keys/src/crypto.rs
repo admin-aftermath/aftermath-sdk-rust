@@ -40,6 +40,7 @@ use serde_with::base64::Base64;
 use serde_with::{Bytes, IfIsHumanReadable, serde_as};
 use strum::EnumString;
 use sui_sdk_types::Address as SuiAddress;
+use sui_sdk_types::bcs::ToBcs;
 
 use crate::intent::IntentMessage;
 
@@ -239,7 +240,11 @@ impl Signature {
         T: Serialize,
     {
         let mut hasher = DefaultHash::default();
-        hasher.update(bcs::to_bytes(&value).expect("Message serialization should not fail"));
+        hasher.update(
+            value
+                .to_bcs()
+                .expect("Message serialization should not fail"),
+        );
         Signer::sign(secret, &hasher.finalize().digest)
     }
 
@@ -759,7 +764,11 @@ impl<S: SuiSignatureInner + Sized> SuiSignature for S {
         T: Serialize,
     {
         let mut hasher = DefaultHash::default();
-        hasher.update(bcs::to_bytes(&value).expect("Message serialization should not fail"));
+        hasher.update(
+            value
+                .to_bcs()
+                .expect("Message serialization should not fail"),
+        );
         let digest = hasher.finalize().digest;
 
         let (sig, pk) = &self.get_verification_inputs()?;

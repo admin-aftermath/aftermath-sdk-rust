@@ -180,8 +180,8 @@ pub enum MoveData {
     Bool(bool),
     Number(String),
     String(String),
-    Vector(Vec<MoveData>),
-    Option(Option<Box<MoveData>>),
+    Vector(Vec<Self>),
+    Option(Option<Box<Self>>),
     Struct(Vec<MoveField>),
     Variant(MoveVariant),
 }
@@ -237,7 +237,7 @@ pub enum MoveTypeLayout {
     U64,
     U128,
     U256,
-    Vector(Box<MoveTypeLayout>),
+    Vector(Box<Self>),
     Struct(MoveStructLayout),
     Enum(MoveEnumLayout),
 }
@@ -299,14 +299,14 @@ pub enum MoveTypeSignature {
     U64,
     U128,
     U256,
-    Vector(Box<MoveTypeSignature>),
+    Vector(Box<Self>),
     Datatype {
         package: String,
         module: String,
         #[serde(rename = "type")]
         type_: String,
         #[serde(rename = "typeParameters")]
-        type_parameters: Vec<MoveTypeSignature>,
+        type_parameters: Vec<Self>,
     },
 }
 
@@ -366,14 +366,14 @@ pub enum OpenMoveTypeSignatureBody {
     U64,
     U128,
     U256,
-    Vector(Box<OpenMoveTypeSignatureBody>),
+    Vector(Box<Self>),
     Datatype {
         package: String,
         module: String,
         #[serde(rename = "type")]
         type_: String,
         #[serde(rename = "typeParameters")]
-        type_parameters: Vec<OpenMoveTypeSignatureBody>,
+        type_parameters: Vec<Self>,
     },
 }
 

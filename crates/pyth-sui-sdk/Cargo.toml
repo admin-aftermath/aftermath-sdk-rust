@@ -36,13 +36,12 @@ pyth-sdk = ["dep:af-utilities", "dep:pyth-sdk"]
 af-ptbuilder   = { version = "10.0.0", public = true, optional = true, path = "../af-ptbuilder" }
 af-sui-types   = { version = "0.15.0", public = true, path = "../af-sui-types" }
 af-utilities   = { version = "0.12", public = true, optional = true, path = "../af-utilities" }
-bcs            = { version = "0.1", public = true }
 bytes          = { version = "1", public = true, optional = true }
 hex            = { version = "0.4", public = true }
 jsonrpsee-core = { version = "0.26", public = true, optional = true }
 pyth-sdk       = { version = "0.8", public = true, optional = true }
 sui-jsonrpc    = { version = "0.22.0", public = true, default-features = false, optional = true, path = "../sui-jsonrpc" }
-sui-sdk-types  = { version = "0.0.8", public = true }
+sui-sdk-types  = { version = "0.1", public = true }
 
 af-move-type      = { version = "0.15", path = "../af-move-type" }
 af-sui-pkg-sdk    = { version = "0.12", path = "../af-sui-pkg-sdk" }

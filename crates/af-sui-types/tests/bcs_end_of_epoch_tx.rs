@@ -1,5 +1,5 @@
-use af_sui_types::decode_base64_default;
 use sui_sdk_types::Transaction;
+use sui_sdk_types::bcs::FromBcs;
 
 // epoch = 594 (testnet)
 //
@@ -25,6 +25,5 @@ const BASE64_BCS: &str = "AAUCAlICAAAAAAAAdACtAAAAAAAAUwIAAAAAAABGAAAAAAAAAIDnfF
 
 #[test]
 fn transaction_deser() {
-    let bytes = decode_base64_default(BASE64_BCS).unwrap();
-    let _: Transaction = bcs::from_bytes(&bytes).unwrap();
+    let _: Transaction = Transaction::from_bcs_base64(BASE64_BCS).unwrap();
 }

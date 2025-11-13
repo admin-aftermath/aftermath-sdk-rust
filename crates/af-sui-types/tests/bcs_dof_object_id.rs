@@ -1,6 +1,6 @@
 //! This showcases how to obtain a DOF's object ID from its wrapper `Field`'s BCS bytes.
-use af_sui_types::{Address, decode_base64_default};
-use sui_sdk_types::Object;
+use sui_sdk_types::bcs::FromBcs;
+use sui_sdk_types::{Address, Object};
 
 // Field wrapper:
 // {
@@ -28,8 +28,7 @@ NB4i8B6YCC9BXLQAAAAAA";
 
 #[test]
 fn dof_object_id() {
-    let bytes = decode_base64_default(BASE64_BCS).unwrap();
-    let wrapper: Object = bcs::from_bytes(&bytes).unwrap();
+    let wrapper = Object::from_bcs_base64(BASE64_BCS).unwrap();
     let move_object = wrapper.as_struct().expect("Not a Move object");
     let contents = &move_object.contents();
     println!("{wrapper:#?}");

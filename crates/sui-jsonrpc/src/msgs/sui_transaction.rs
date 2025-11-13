@@ -16,7 +16,6 @@ use sui_sdk_types::{
     EpochId,
     GasCostSummary,
     MoveLocation,
-    StructTag,
     TypeTag,
     UserSignature,
     Version,
@@ -244,7 +243,7 @@ impl SuiTransactionBlockResponse {
         self.raw_effects
             .len()
             .ge(&0)
-            .then_some(bcs::from_bytes(&self.raw_effects))
+            .then_some(sui_sdk_types::bcs::FromBcs::from_bcs(&self.raw_effects))
             .transpose()
             .map_err(From::from)
             .map_err(ToEffectsError::Generic)
@@ -473,14 +472,9 @@ pub fn get_new_package_upgrade_cap_from_response(
             .find(|change| {
                 matches!(change, ObjectChange::Created {
                     owner: Owner::AddressOwner(_),
-                    object_type: StructTag {
-                        address: Address::TWO,
-                        module,
-                        name,
-                        ..
-                    },
+                    object_type,
                     ..
-                } if module.as_str() == "package" && name.as_str() == "UpgradeCap")
+                } if *object_type.address() == Address::TWO && object_type.module().as_str() == "package" && object_type.name().as_str() == "UpgradeCap")
             })
             .map(|change| change.object_ref())
     })

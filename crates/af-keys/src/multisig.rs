@@ -13,6 +13,7 @@ use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use sui_sdk_types::Address as SuiAddress;
+use sui_sdk_types::bcs::{FromBcs, ToBcs};
 
 use crate::crypto::{
     CompressedSignature,
@@ -181,7 +182,7 @@ impl ToFromBytes for MultiSig {
             return Err(FastCryptoError::InvalidInput);
         }
         let multisig: Self =
-            bcs::from_bytes(&bytes[1..]).map_err(|_| FastCryptoError::InvalidSignature)?;
+            FromBcs::from_bcs(&bytes[1..]).map_err(|_| FastCryptoError::InvalidSignature)?;
         multisig.init_and_validate()
     }
 }
@@ -207,7 +208,7 @@ impl AsRef<[u8]> for MultiSig {
     fn as_ref(&self) -> &[u8] {
         self.bytes
             .get_or_try_init::<_, eyre::Report>(|| {
-                let as_bytes = bcs::to_bytes(self).expect("BCS serialization should not fail");
+                let as_bytes = self.to_bcs().expect("BCS serialization should not fail");
                 let mut bytes = Vec::with_capacity(1 + as_bytes.len());
                 bytes.push(SignatureScheme::MultiSig.flag());
                 bytes.extend_from_slice(as_bytes.as_slice());

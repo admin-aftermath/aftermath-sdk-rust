@@ -8,12 +8,12 @@ pub struct Gas;
 
 impl Gas {
     pub fn type_() -> StructTag {
-        StructTag {
-            address: SUI_FRAMEWORK_ADDRESS,
-            name: GAS_STRUCT_NAME.to_owned(),
-            module: GAS_MODULE_NAME.to_owned(),
-            type_params: Vec::new(),
-        }
+        StructTag::new(
+            SUI_FRAMEWORK_ADDRESS,
+            GAS_STRUCT_NAME.to_owned(),
+            GAS_MODULE_NAME.to_owned(),
+            Vec::new(),
+        )
     }
 
     pub fn type_tag() -> TypeTag {
@@ -34,5 +34,8 @@ impl Gas {
 
 /// Return `true` if `s` is the type of a gas coin (i.e., 0x2::coin::Coin<0x2::sui::SUI>)
 pub fn is_gas_coin(s: &StructTag) -> bool {
-    s.is_coin().is_some() && s.type_params.len() == 1 && Gas::is_gas_type(&s.type_params[0])
+    let Some(coin_type) = s.is_coin() else {
+        return false;
+    };
+    Gas::is_gas_type(coin_type)
 }

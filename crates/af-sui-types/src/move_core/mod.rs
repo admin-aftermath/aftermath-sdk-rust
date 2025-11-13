@@ -23,12 +23,12 @@ mod tests {
 
     #[test]
     fn test_type_tag_serde() {
-        let a = TypeTag::Struct(Box::new(StructTag {
-            address: "0x1".parse().expect("Parses short hex reprs"),
-            module: IdentStr::cast("abc").to_owned(),
-            name: IdentStr::cast("abc").to_owned(),
-            type_params: vec![TypeTag::U8],
-        }));
+        let a = TypeTag::Struct(Box::new(StructTag::new(
+            "0x1".parse().expect("Parses short hex reprs"),
+            IdentStr::cast("abc").to_owned(),
+            IdentStr::cast("abc").to_owned(),
+            vec![TypeTag::U8],
+        )));
         let b = serde_json::to_string(&a).unwrap();
         let c: TypeTag = serde_json::from_str(&b).unwrap();
         assert!(a.eq(&c), "Typetag serde error");

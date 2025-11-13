@@ -1,5 +1,5 @@
 //! Re-exports for derive
-pub use af_sui_types::{Address, Identifier, StructTag, TypeTag};
+pub use af_sui_types::{Address, Identifier, StructTag, StructTagHelper, TypeTag};
 pub use serde::{Deserialize, Serialize};
 pub use serde_with::{DeserializeFromStr, SerializeDisplay};
 pub use {derive_where, serde_with};

@@ -204,12 +204,12 @@ where
     T: StaticAddress + StaticModule + StaticName + StaticTypeParams,
 {
     fn struct_tag() -> StructTag {
-        StructTag {
-            address: Self::address(),
-            module: Self::module(),
-            name: Self::name(),
-            type_params: Self::type_params(),
-        }
+        StructTag::new(
+            Self::address(),
+            Self::module(),
+            Self::name(),
+            Self::type_params(),
+        )
     }
 }
 

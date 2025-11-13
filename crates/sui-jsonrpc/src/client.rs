@@ -11,6 +11,7 @@ use jsonrpsee::rpc_params;
 use jsonrpsee::ws_client::{PingConfig, WsClient, WsClientBuilder};
 use jsonrpsee_http_client::{HeaderMap, HeaderValue, HttpClient, HttpClientBuilder};
 use serde_json::Value;
+use sui_sdk_types::bcs::ToBcs;
 use sui_sdk_types::{
     Address,
     Digest,
@@ -521,8 +522,9 @@ impl SuiClient {
         signatures: &[UserSignature],
         options: Option<SuiTransactionBlockResponseOptions>,
     ) -> Result<SuiTransactionBlockResponse, JsonRpcClientError> {
-        let tx_bytes =
-            encode_base64_default(bcs::to_bytes(tx_data).expect("Transaction is BCS-compatible"));
+        let tx_bytes = tx_data
+            .to_bcs_base64()
+            .expect("Transaction is BCS-compatible");
         self.http()
             .execute_transaction_block(
                 tx_bytes,
@@ -554,9 +556,9 @@ impl SuiClient {
             },
             expiration: TransactionExpiration::None,
         };
-        let tx_bytes = encode_base64_default(
-            bcs::to_bytes(&tx_data).expect("Transaction serialization shouldn't fail"),
-        );
+        let tx_bytes = tx_data
+            .to_bcs_base64()
+            .expect("Transaction serialization shouldn't fail");
         self.http().dry_run_transaction_block(tx_bytes).await
     }
 
@@ -591,9 +593,9 @@ impl SuiClient {
             },
             expiration: TransactionExpiration::None,
         };
-        let tx_bytes = encode_base64_default(
-            bcs::to_bytes(&tx_data).expect("Transaction serialization shouldn't fail"),
-        );
+        let tx_bytes = tx_data
+            .to_bcs_base64()
+            .expect("Transaction serialization shouldn't fail");
         let response = self.http().dry_run_transaction_block(tx_bytes).await?;
         if let SuiExecutionStatus::Failure { error } = response.effects.status() {
             return Err(DryRunError::Execution(error.clone(), response));
