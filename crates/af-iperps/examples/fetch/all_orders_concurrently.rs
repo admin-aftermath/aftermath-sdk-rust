@@ -1,9 +1,9 @@
 use std::collections::BTreeMap;
-use std::fmt::Display;
 use std::time::Instant;
 
 use af_iperps::ClearingHouse;
 use af_iperps::graphql::{GraphQlClientExt as _, OrderMaps};
+use af_iperps::math::OrderBookUnits;
 use af_iperps::order_helpers::Side;
 use af_iperps::order_id::{order_side, price_ask, price_bid};
 use af_move_type::MoveInstance;
@@ -92,14 +92,13 @@ fn maybe_plot(
         return;
     };
 
-    println!("Min bid {}", obook_price(ch, price_bid(bids.last().0)));
-    println!("Max ask {}", obook_price(ch, price_ask(asks.last().0)));
-
-    let mid_price: f64 = obook_price(
-        ch,
-        (price_bid(bids.first().0) + price_ask(asks.first().0)) / 2,
-    )
-    .into();
+    println!("Min bid {}", ch.price_to_ifixed(price_bid(bids.last().0)));
+    println!("Max ask {}", ch.price_to_ifixed(price_ask(asks.last().0)));
+    let mid = (price_bid(bids.first().0) + price_ask(asks.first().0)) / 2;
+    let mid_price: f64 = ch
+        .price_to_ifixed(mid)
+        .try_into()
+        .expect("Converting ifixed");
     println!("Mid price {mid_price}");
 
     let min_price = mid_price * (1.0 - max_spread);
@@ -109,7 +108,10 @@ fn maybe_plot(
     let bids: Vec<_> = bids
         .into_iter()
         .map_while(|(id, size)| {
-            let price: f64 = obook_price(ch, price_bid(id)).into();
+            let price: f64 = ch
+                .price_to_ifixed(price_bid(id))
+                .try_into()
+                .expect("Converting ifixed");
             if price < min_price {
                 None
             } else {
@@ -123,7 +125,10 @@ fn maybe_plot(
     let asks: Vec<_> = asks
         .into_iter()
         .map_while(|(id, size)| {
-            let price: f64 = obook_price(ch, price_ask(id)).into();
+            let price: f64 = ch
+                .price_to_ifixed(price_ask(id))
+                .try_into()
+                .expect("Converting ifixed");
             if price > max_price {
                 None
             } else {
@@ -139,38 +144,6 @@ fn maybe_plot(
         .linecolorplot(&Shape::Steps(&bids), green)
         .linecolorplot(&Shape::Steps(&asks), red)
         .display();
-}
-
-const fn obook_price(ch: &ClearingHouse, price: u64) -> TicksPerLot {
-    TicksPerLot {
-        price,
-        lot_size: ch.market_params.lot_size,
-        tick_size: ch.market_params.tick_size,
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-struct TicksPerLot {
-    price: u64,
-    lot_size: u64,
-    tick_size: u64,
-}
-
-impl From<TicksPerLot> for f64 {
-    fn from(value: TicksPerLot) -> Self {
-        let TicksPerLot {
-            price,
-            lot_size,
-            tick_size,
-        } = value;
-        (price as Self * tick_size as Self) / lot_size as Self
-    }
-}
-
-impl Display for TicksPerLot {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f64::from(*self).fmt(f)
-    }
 }
 
 // https://github.com/console-rs/indicatif/blob/main/examples/long-spinner.rs

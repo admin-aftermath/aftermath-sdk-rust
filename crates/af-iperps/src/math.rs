@@ -81,21 +81,21 @@ pub trait OrderBookUnits {
 
 impl OrderBookUnits for MarketParams {
     fn lot_size(&self) -> u64 {
-        self.lot_size
+        self.core_params.lot_size
     }
 
     fn tick_size(&self) -> u64 {
-        self.tick_size
+        self.core_params.tick_size
     }
 }
 
 impl<T: MoveType> OrderBookUnits for ClearingHouse<T> {
     fn lot_size(&self) -> u64 {
-        self.market_params.lot_size
+        self.market_params.core_params.lot_size
     }
 
     fn tick_size(&self) -> u64 {
-        self.market_params.tick_size
+        self.market_params.core_params.tick_size
     }
 }
 
@@ -108,7 +108,7 @@ impl<T: MoveType> ClearingHouse<T> {
             coll_price,
             self.market_state.cum_funding_rate_long,
             self.market_state.cum_funding_rate_short,
-            self.market_params.margin_ratio_maintenance,
+            self.market_params.core_params.margin_ratio_maintenance,
         )
     }
 }
@@ -116,8 +116,8 @@ impl<T: MoveType> ClearingHouse<T> {
 impl MarketParams {
     /// The initial and maintenance margin requirements for a certain notional, in the same units.
     pub fn margin_requirements(&self, notional: IFixed) -> (IFixed, IFixed) {
-        let min_margin = notional * self.margin_ratio_initial;
-        let liq_margin = notional * self.margin_ratio_maintenance;
+        let min_margin = notional * self.core_params.margin_ratio_initial;
+        let liq_margin = notional * self.core_params.margin_ratio_maintenance;
         (min_margin, liq_margin)
     }
 }

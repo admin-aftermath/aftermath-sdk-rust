@@ -114,6 +114,18 @@ module perpetuals::errors {
     /// Raised when trying to place an order passing a `price` that is not a multiple
     /// of market's tick size
     const PriceNotMultipleOfTickSize: u64 = 35;
+    /// Raised when adl counterparties vec lengths differ
+    const ADLCounterpartiesMismatch: u64 = 36;
+    /// Raised when adl counterparty cannot reduce its assigned portion of base
+    const ADLCounterpartyInsufficient: u64 = 37;
+    /// Raised when adl does not fully close the bad debt position
+    const ADLBadDebtPositionNotClosed: u64 = 38;
+    /// Raised when weights for adl do not sum to fixed point 1
+    const ADLWeightsDoNotSumToOne: u64 = 39;
+    /// Open interest is 0 when trying to socialize bad debt
+    const NoOpenInterestToSocializeBadDebt: u64 = 40;
+    /// Bad debt amount is greater than max allowed threshold
+    const BadDebtAboveThreshold: u64 = 41;
 
     // Market ---------------------------------------------------------------
 
@@ -198,8 +210,6 @@ module perpetuals::errors {
     /// When trying to change a map configuration, but the map has
     /// length less than 4
     const MapTooSmall: u64 = 3007;
-    /// When taker matches its own order
-    const SelfTrading: u64 = 3008;
 }
 }
 
@@ -210,8 +220,8 @@ mod tests {
     #[test]
     fn variant_to_code() {
         assert_eq!(MoveAbort::MaxPendingOrdersExceeded as u64, 2000);
-        assert_eq!(MoveAbort::SelfTrading as u64, 3008);
+        assert_eq!(MoveAbort::MapTooSmall as u64, 3007);
         assert_eq!(Ok(MoveAbort::MaxPendingOrdersExceeded), 2000_u64.try_into());
-        assert_eq!(Ok(MoveAbort::SelfTrading), 3008_u64.try_into());
+        assert_eq!(Ok(MoveAbort::MapTooSmall), 3007_u64.try_into());
     }
 }

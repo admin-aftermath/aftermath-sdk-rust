@@ -96,6 +96,13 @@ sui_pkg_sdk!(perpetuals {
         }
     }
 
+    module adl {
+        /// Capability object required to perform auto-deleverage.
+        struct ADLCapability has key, store {
+            id: UID
+        }
+    }
+
     module clearing_house {
         /// The central object that owns the market state.
         ///
@@ -324,8 +331,6 @@ sui_pkg_sdk!(perpetuals {
             ch_id: ID,
             base_pfs_id: ID,
             collateral_pfs_id: ID,
-            lot_size: u64,
-            tick_size: u64,
             scaling_factor: IFixed
         }
 
@@ -382,8 +387,8 @@ sui_pkg_sdk!(perpetuals {
 
         struct ClosedMarket has copy, drop {
             ch_id: ID,
-            base_settlement_price: u256,
-            collateral_settlement_price: u256
+            base_settlement_price: IFixed,
+            collateral_settlement_price: IFixed
         }
 
         struct ClosedPositionAtSettlementPrices has copy, drop {
@@ -519,10 +524,22 @@ sui_pkg_sdk!(perpetuals {
             liqor_fees: IFixed,
         }
 
-        struct UpdatedCumFundings has copy, drop {
+        struct SocializedBadDebt has copy, drop {
             ch_id: ID,
+            bad_debt_usd: IFixed,
+            socialized_fundings: IFixed,
+            added_to_long: bool,
             cum_funding_rate_long: IFixed,
             cum_funding_rate_short: IFixed,
+        }
+
+        struct PerformedADL has copy, drop {
+            ch_id: ID,
+            bad_debt_account_id: u64,
+            size_reduced: u64,
+            adl_price: u64,
+            counterparty_account_id: u64,
+            bad_debt_is_long: bool,
         }
 
         struct CreatedPosition has copy, drop {
@@ -651,14 +668,48 @@ sui_pkg_sdk!(perpetuals {
             min_order_usd_value: IFixed,
         }
 
-        struct UpdatedBaseOracleTolerance has copy, drop {
+        struct UpdatedBasePfsID has copy, drop {
             ch_id: ID,
-            oracle_tolerance: u64,
+            pfs_id: ID,
         }
 
-        struct UpdatedCollateralOracleTolerance has copy, drop {
+        struct UpdatedCollateralPfsID has copy, drop {
             ch_id: ID,
-            oracle_tolerance: u64,
+            pfs_id: ID,
+        }
+
+        struct UpdatedBasePfsSourceID has copy, drop {
+            ch_id: ID,
+            source_id: ID,
+        }
+
+        struct UpdatedCollateralPfsSourceID has copy, drop {
+            ch_id: ID,
+            source_id: ID,
+        }
+
+        struct UpdatedBasePfsTolerance has copy, drop {
+            ch_id: ID,
+            pfs_tolerance: u64,
+        }
+
+        struct UpdatedCollateralPfsTolerance has copy, drop {
+            ch_id: ID,
+            pfs_tolerance: u64,
+        }
+
+        struct UpdatedMaxSocializeLossesMrDecrease has copy, drop {
+            ch_id: ID,
+            max_socialize_losses_mr_decrease: IFixed,
+        }
+        struct UpdatedMaxBadDebt has copy, drop {
+            ch_id: ID,
+            max_bad_debt: IFixed,
+        }
+
+        struct UpdatedCollateralHaircut has copy, drop {
+            ch_id: ID,
+            collateral_haircut: IFixed,
         }
 
         struct UpdatedMaxOpenInterest has copy, drop {
@@ -762,14 +813,64 @@ sui_pkg_sdk!(perpetuals {
     module market {
         /// Static attributes of a perpetuals market.
         struct MarketParams has copy, drop, store {
-            /// Minimum margin ratio for opening a new position.
-            margin_ratio_initial: IFixed,
-            /// Margin ratio below which full liquidations can occur.
-            margin_ratio_maintenance: IFixed,
+            /// Set of parameters governing market's core behaviors
+            core_params: CoreParams,
+            /// Set of parameters related to market's fees
+            fees_params: FeesParams,
+            /// Set of parameters governing fundings and twap updates
+            twap_params: TwapParams,
+            /// Set of parameters defining market's limits
+            limits_params: LimitsParams
+        }
+
+        struct CoreParams has copy, drop, store {
             /// Identifier of the base asset's price feed storage.
             base_pfs_id: ID,
             /// Identifier of the collateral asset's price feed storage.
             collateral_pfs_id: ID,
+            /// Identifier of the base asset's price feed storage source id (pyth, stork, etc...).
+            base_pfs_source_id: ID,
+            /// Identifier of the collateral asset's price feed storage source id (pyth, stork, etc...).
+            collateral_pfs_source_id: ID,
+            /// Timestamp tolerance for base oracle price
+            base_pfs_tolerance: u64,
+            /// Timestamp tolerance for collateral oracle price
+            collateral_pfs_tolerance: u64,
+            /// Number of base units exchanged per lot
+            lot_size: u64,
+            /// Number of quote units exchanged per tick
+            tick_size: u64,
+            /// Scaling factor to use to convert collateral units to ifixed values and viceversa
+            scaling_factor: IFixed,
+            /// Value haircut applied to collateral allocated in the position.
+            /// Example: 98%
+            collateral_haircut: IFixed,
+            /// Minimum margin ratio for opening a new position.
+            margin_ratio_initial: IFixed,
+            /// Margin ratio below which full liquidations can occur.
+            margin_ratio_maintenance: IFixed,
+        }
+
+        struct FeesParams has copy, drop, store {
+            /// Proportion of volume charged as fees from makers upon processing
+            /// fill events.
+            maker_fee: IFixed,
+            /// Proportion of volume charged as fees from takers after processing
+            /// fill events.
+            taker_fee: IFixed,
+            /// Proportion of volume charged as fees from liquidatees
+            liquidation_fee: IFixed,
+            /// Proportion of volume charged as fees from liquidatees after forced cancelling
+            /// of pending orders during liquidation.
+            force_cancel_fee: IFixed,
+            /// Proportion of volume charged as fees from liquidatees to deposit into insurance fund
+            insurance_fund_fee: IFixed,
+            /// Additional taker fee to apply in case the gas price set for the transaction violates
+            /// the z-score constraint
+            gas_price_taker_fee: IFixed,
+        }
+
+        struct TwapParams has copy, drop, store {
             /// The time span between each funding rate update.
             funding_frequency_ms: u64,
             /// Period of time over which funding (the difference between book and
@@ -796,31 +897,13 @@ sui_pkg_sdk!(perpetuals {
             spread_twap_period_ms: u64,
             /// The reference time span used for weighting the TWAP updates for gas price.
             gas_price_twap_period_ms: u64,
-            /// Proportion of volume charged as fees from makers upon processing
-            /// fill events.
-            maker_fee: IFixed,
-            /// Proportion of volume charged as fees from takers after processing
-            /// fill events.
-            taker_fee: IFixed,
-            /// Proportion of volume charged as fees from liquidatees
-            liquidation_fee: IFixed,
-            /// Proportion of volume charged as fees from liquidatees after forced cancelling
-            /// of pending orders during liquidation.
-            force_cancel_fee: IFixed,
-            /// Proportion of volume charged as fees from liquidatees to deposit into insurance fund
-            insurance_fund_fee: IFixed,
+        }
+
+        struct LimitsParams has copy, drop, store {
             /// Minimum USD value an order is required to be worth to be placed
             min_order_usd_value: IFixed,
-            /// Number of base units exchanged per lot
-            lot_size: u64,
-            /// Number of quote units exchanged per tick
-            tick_size: u64,
             /// Maximum number of pending orders that a position can have.
             max_pending_orders: u64,
-            /// Timestamp tolerance for base oracle price
-            base_oracle_tolerance: u64,
-            /// Timestamp tolerance for collateral oracle price
-            collateral_oracle_tolerance: u64,
             /// Max open interest (in base tokens) available for this market
             max_open_interest: IFixed,
             /// The check on `max_open_interest_position_percent` is not performed if
@@ -828,16 +911,16 @@ sui_pkg_sdk!(perpetuals {
             max_open_interest_threshold: IFixed,
             /// Max open interest percentage a position can have relative to total market's open interest
             max_open_interest_position_percent: IFixed,
-            /// Scaling factor to use to convert collateral units to ifixed values and viceversa
-            scaling_factor: IFixed,
-            /// Additional taker fee to apply in case the gas price set for the transaction violates
-            /// the z-score constraint
-            gas_price_taker_fee: IFixed,
+            /// Max amount of bad debt that can be socialized in nominal value.
+            /// Positions that violate this check should be ADL'd.
+            max_bad_debt: IFixed,
+            /// Max amount of bad debt that can be socialized relative to total market's open interest.
+            /// Positions that violate this check should be ADL'd.
+            max_socialize_losses_mr_decrease: IFixed,
             /// Z-Score threshold level used to determine if to apply `gas_price_taker_fee` to the
             /// executed order
             z_score_threshold: IFixed,
         }
-
         /// The state of a perpetuals market.
         struct MarketState has store {
             /// The latest cumulative funding premium in this market for longs. Must be updated
@@ -1016,8 +1099,6 @@ sui_pkg_sdk!(perpetuals {
         struct MarketInfo<!phantom T> has store {
             base_pfs_id: ID,
             collateral_pfs_id: ID,
-            lot_size: u64,
-            tick_size: u64,
             scaling_factor: IFixed
         }
 

@@ -62,8 +62,8 @@ async fn main() -> Result<()> {
     // Fetch the required objects to perform a trading session
     object_args!({
         account: account_obj_id,
-        base_oracle: clearing_house.value.market_params.base_pfs_id.bytes,
-        collateral_oracle: clearing_house.value.market_params.collateral_pfs_id.bytes,
+        base_oracle: clearing_house.value.market_params.core_params.base_pfs_id.bytes,
+        collateral_oracle: clearing_house.value.market_params.core_params.collateral_pfs_id.bytes,
     } with { &client });
 
     let ptb = ptb!(
